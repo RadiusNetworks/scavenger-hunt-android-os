@@ -59,27 +59,54 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
     private TargetItemActivity itemActivity = null;
     private LoadingActivity loadingActivity = null;
     private RemoteAssetCache remoteAssetCache;
+    private String loadingFailedTitle;
+    private String loadingFailedMessage;
+    int startCount = 0;
 
 
     @Override
     public void onCreate() {
         super.onCreate();
-
-        // TODO: make bootstrapping work with PK
-        // regionBootstrap = new RegionBootstrap(this, region);
         backgroundPowerSaver = new BackgroundPowerSaver(this);
+        manager = ProximityKitManager.getInstanceForApplication(this);
+        manager.getIBeaconManager().LOG_DEBUG = true;
+        manager.setNotifier(this);
+        manager.start(); // This starts ranging and monitoring for iBeacons defined in ProximityKit\
     }
 
     // method gets called after the LoadingActivity starts.  We wait to start up ProximityKit until
     // our activity is displayed, that way we will be able to display notifications to the user if
     // there is a problem reaching the server
     public void onLoadingActivityCreated(LoadingActivity activity) {
+        startCount++;
         this.loadingActivity = activity;
-        Log.d(TAG, "loadingActivity is now"+loadingActivity);
-        manager = ProximityKitManager.getInstanceForApplication(this);
-        manager.setNotifier(this);
-        manager.start(); // This starts ranging and monitoring for iBeacons defined in ProximityKit
+        Log.d(TAG, "loadingActivity created for time #"+startCount);
+        if (startCount == 1 ) {
+            if (loadingFailedTitle != null) {
+                showFailedErrorMessage();
+            }
+        }
+        else {
+            // we have alrady tried to start before, and apparently the user is resarting.
+            // we will kick off loading dependencies again
+            ProximityKitManager.getInstanceForApplication(this).sync();
+        }
     }
+
+    private void dependencyLoadingFailed(String title, String message) {
+        Log.d(TAG, "dependencyLoadingFailed");
+        this.loadingFailedTitle = title;
+        this.loadingFailedMessage = message;
+        if (this.loadingActivity != null) {
+            showFailedErrorMessage();
+        }
+    }
+
+    private void showFailedErrorMessage() {
+        Log.d(TAG, "showFailedErrorMesage");
+        loadingActivity.failAndTerminate(loadingFailedTitle, loadingFailedMessage);
+    }
+
 
     @Override
     public void iBeaconDataUpdate(IBeacon iBeacon, IBeaconData iBeaconData, DataProviderException e) {
@@ -223,14 +250,7 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
     public void dependencyLoadFinished() {
         Log.d(TAG, "all dependencies loaded");
         if (ProximityKitManager.getInstanceForApplication(this).getKit() == null || hunt.getTargetList().size() == 0) {
-            if (loadingActivity != null && !loadingActivity.isDestroyed()) {
-                loadingActivity.failAndTerminate("Network error", "Can't access scavenger hunt data.  Please verify your network connection and try again.");
-            }
-            else {
-                Log.e(TAG, "loading activity is null.  can't tell the user we are exiting.");
-            }
-            // TODO:  do something here to make the iBeacon service terminate
-
+            dependencyLoadingFailed("Network error", "Can't access scavenger hunt data.  Please verify your network connection and try again.");
             return;
         }
 
@@ -241,7 +261,7 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
             return;
         }
         else {
-            loadingActivity.failAndTerminate("Network error", "Can't download images.  Please verify your network connection and try again.");
+            dependencyLoadingFailed("Network error", "Can't download images.  Please verify your network connection and try again.");
             return;
         }
     }
