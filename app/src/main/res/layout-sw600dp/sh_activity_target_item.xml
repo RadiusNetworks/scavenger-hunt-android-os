@@ -42,12 +42,4 @@
         android:textColor="@android:color/white"
         android:textSize="100dp" />
 
-    <ProgressBar
-        android:id="@+id/sh_progressBar1"
-        style="?android:attr/progressBarStyleHorizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignTop="@+id/sh_textView1"
-        android:layout_centerHorizontal="true" />
-
 </RelativeLayout>

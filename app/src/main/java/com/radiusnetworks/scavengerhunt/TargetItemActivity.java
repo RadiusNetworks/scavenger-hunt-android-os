@@ -76,7 +76,6 @@ public class TargetItemActivity extends Activity {
 
     	runOnUiThread(new Runnable() {
    	     public void run() {
-   			findViewById(R.id.sh_progressBar1);
    			TextView distanceView = (TextView) findViewById(R.id.sh_distance);
    			if (distance < 0) {
    				distanceView.setText("--");

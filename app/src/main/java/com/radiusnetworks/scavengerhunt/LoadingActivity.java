@@ -16,8 +16,12 @@ package com.radiusnetworks.scavengerhunt;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.TextView;
 
 /**
  * this Activity displays a loading spinner while downloading
@@ -36,6 +40,20 @@ public class LoadingActivity extends Activity {
         application = (ScavengerHuntApplication) this.getApplication();
         Log.d(TAG, "setting loading activity");
         application.onLoadingActivityCreated(this);
+        /*
+         Note: per the license of this project, if you are redistributing this software you must
+         include an attribution on the first screen, and have it link to the URL below.
+         The attribution must include the name "Radius Networks".  We request the sentence,
+         "Powered by Radius Networks".
+         */
+        TextView textView = (TextView) this.findViewById(R.id.attribution);
+        textView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://developer.radiusnetworks.com/scavenger_hunt"));
+                startActivity(browserIntent);
+            }
+        });
     }
 
     @Override
@@ -54,9 +72,7 @@ public class LoadingActivity extends Activity {
 
                     @Override
                     public void onDismiss(DialogInterface dialog) {
-                        // terminate this application, and not just this acdtivity
-                        // TODO: is this kosher?
-                        System.exit(0);
+                        LoadingActivity.this.finish();
                     }
 
                 });

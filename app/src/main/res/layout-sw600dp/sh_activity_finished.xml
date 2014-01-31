@@ -28,12 +28,12 @@
         android:id="@+id/sh_textView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/imageView1"
-        android:layout_centerHorizontal="true"
         android:gravity="center"
         android:textSize="25dp"
         android:text="You have successfully completed the\nScavenger Hunt."
-        android:textColor="#FFFFFF" />
+        android:textColor="#FFFFFF"
+        android:layout_below="@+id/sh_textView1"
+        android:layout_centerHorizontal="true" />
 
     <Button
         android:id="@+id/sh_redeem_button"

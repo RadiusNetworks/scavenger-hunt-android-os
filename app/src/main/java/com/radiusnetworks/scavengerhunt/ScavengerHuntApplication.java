@@ -146,14 +146,14 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
             if (iBeacon.getAccuracy() < MINIMUM_TRIGGER_DISTANCE_METERS && !target.isFound()) {
                 Log.d(TAG, "found an item");
                 target.setFound(true);
-                hunt.saveToPreferences(collectionActivity);
+                hunt.saveToPreferences(this);
                 if (collectionActivity != null) {
                     collectionActivity.showItemFound();
                     if (hunt.everythingFound()) {
                         // switch to MainActivity to show player he/she has won
                         Log.d(TAG, "game is won");
                         Intent i = new Intent(collectionActivity, MainActivity.class);
-                        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                         startActivity(i);
                     }
                 }
@@ -214,10 +214,19 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
 
         // The line below will load the saved state of the hunt from the phone's preferences
         hunt = Hunt.loadFromPreferneces(this);
-        // TODO: this only checks that the size is the same, but we should really check that the ids
-        // are all the same, too.
-        if (hunt.getTargetList().size() != targets.size()) {
-            Log.w(TAG, "the number of targets in the hunt has changed from what we have in the settings.  starting over");
+        boolean targetListChanged = hunt.getTargetList().size() != targets.size();
+        for (TargetItem target : hunt.getTargetList() ) {
+            boolean itemFound = false;
+            for (TargetItem targetFromPk : targets) {
+                if (targetFromPk.getId().equals(target.getId())) itemFound = true;
+            }
+            if (itemFound == false) {
+                targetListChanged = true;
+                Log.d(TAG, "Target with hunt_id="+target.getId()+" is no longer in PK.  Target list has changed.");
+            }
+        }
+        if (targetListChanged) {
+            Log.w(TAG, "the targets in the hunt has changed from what we have in the settings.  starting over");
             this.hunt = new Hunt(targets);
             this.hunt.saveToPreferences(this);
         }
@@ -262,7 +271,7 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         if (validateRequiredImagesPresent()) {
             // Yes, we have everything we need to start up.  Let's start the Main Activity!
             Intent i = new Intent(this, MainActivity.class);
-            i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP |Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(i);
             return;
         } else {

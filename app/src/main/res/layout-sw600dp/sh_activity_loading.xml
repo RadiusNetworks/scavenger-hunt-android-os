@@ -27,6 +27,7 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="Loading Images..."
+        android:textSize="30dp"
         android:id="@+id/textView"
         android:layout_below="@+id/attribution"
         android:layout_centerHorizontal="true"
@@ -41,7 +42,7 @@
         android:textStyle="bold"
         android:textColor="#FFFFFF"
         android:id="@+id/title1"
-        android:textSize="40dp"
+        android:textSize="60dp"
         android:gravity="center"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true" />
@@ -56,7 +57,7 @@
         android:id="@+id/title2"
         android:layout_below="@+id/title1"
         android:layout_marginTop="-10dp"
-        android:textSize="40dp"
+        android:textSize="60dp"
         android:gravity="center"
         android:layout_centerHorizontal="true" />
 
@@ -66,7 +67,7 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:textColor="#CCCCFF"
         android:text="Powered by Radius Networks"
-        android:textSize="20dp"
+        android:textSize="30dp"
         android:layout_centerHorizontal="true"
         android:id="@+id/attribution"
         android:layout_below="@+id/title2" />
