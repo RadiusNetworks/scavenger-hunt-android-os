@@ -32,6 +32,9 @@ import android.util.Log;
 import android.view.Menu;
 import android.widget.TextView;
 
+/**
+ * Displays the estimated distance in meters to the target
+ */
 public class TargetItemActivity extends Activity {
 	public static final String TAG = "TargetItemActivity";
 	private String huntId;
@@ -63,18 +66,10 @@ public class TargetItemActivity extends Activity {
 		super.onDestroy();
         application.setItemActivity(null);
     }
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.main, menu);
-		return true;
-	}
 	
 	public void updateDistance(final IBeacon iBeacon, final IBeaconData data) {
-		Log.i(TAG, "update with distance");
         if (data == null || !data.get("hunt_id").equals(huntId)) {
             // This iBeacon isn't the one we are showing.  Ignore it.
-            Log.d(TAG, "Ignoring ibeacon with minor "+iBeacon.getMinor()+" because it does not have a huntId of "+huntId);
             return;
         }
         final double distance = iBeacon.getAccuracy();

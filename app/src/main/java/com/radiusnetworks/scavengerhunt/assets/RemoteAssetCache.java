@@ -25,6 +25,9 @@ import java.util.regex.Pattern;
 
 /**
  * Created by dyoung on 1/28/14.
+ *
+ * Keeps a cache in the Android filesystem of the images needed for the application.
+ * Provides a mechanism to download them and retrieve them later.
  */
 public class RemoteAssetCache {
     private static final String TAG = "RemoteAssetCache";
@@ -40,6 +43,19 @@ public class RemoteAssetCache {
         this.context = context;
     }
 
+    /**
+     * Downloads a set of images from a web server, based on a passed map keyed off of
+     * the desired local filename that points to the remote URL as a string.
+     *
+     * If the URLString has a screen density modifier on it (e.g. _hdpi), and that image
+     * cannot be downloaded, this class will retry downloading it from the _mdpi variant.
+     * When complete, all files that were successfully downloaded are stored on the Android
+     * file system in the home directory of the application under the filenames in the keys
+     * to the assetUrls Map.  If all were downloaded successfully, the requestComplete callback
+     * will be called, otherwise the requestFailed callback will be called.
+     * @param assetUrls
+     * @param callback
+     */
     public void downloadAssets(Map<String,String> assetUrls, AssetFetcherCallback callback) {
         if (assetsToDownload > 0) {
             throw new RuntimeException("already downloading assets");
@@ -129,6 +145,11 @@ public class RemoteAssetCache {
 
     }
 
+    /**
+     * Returns an ImageView of an image asset in the cache, keyed by the local filename
+     * @param name
+     * @return
+     */
     public ImageView getImageByName(String name) {
         String fname = context.getFilesDir().getAbsolutePath()+"/"+name;
         Bitmap bitmap = BitmapFactory.decodeFile(fname);

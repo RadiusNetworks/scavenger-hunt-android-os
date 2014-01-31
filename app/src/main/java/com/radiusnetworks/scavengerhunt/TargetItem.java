@@ -13,6 +13,11 @@
  */
 package com.radiusnetworks.scavengerhunt;
 
+/**
+ * A target item in the scavenger hunt,
+ * basically just a wrapper around the ProximityKit hunt_id attibute
+ * value and a flag to whether or not this target has been found
+ */
 public class TargetItem {
 	private String id;
 	private boolean found;

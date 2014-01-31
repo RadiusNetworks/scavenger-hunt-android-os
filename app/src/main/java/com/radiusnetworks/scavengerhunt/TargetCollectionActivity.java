@@ -14,27 +14,26 @@
 package com.radiusnetworks.scavengerhunt;
 
 import com.radiusnetworks.ibeacon.IBeaconManager;
-import com.radiusnetworks.ibeacon.Region;
-import com.radiusnetworks.ibeacon.IBeaconConsumer;
 
 import android.os.Bundle;
-import android.os.RemoteException;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
-import android.widget.ImageView;
 import android.widget.Toast;
 
+/**
+ * Activity displays all the badge icons in the scavenger hunt and allows the
+ * user to tap on them to display estimated distance
+ */
 public class TargetCollectionActivity extends Activity  {
 	public static final String TAG = "TargetCollectionActivity";
 	public static final String NOT_FOUND_SUFFIX = "_grey";
@@ -62,7 +61,6 @@ public class TargetCollectionActivity extends Activity  {
 			screenSizeSuffix = "_tablet";
 		}
         application.setCollectionActivity(this);
-		Log.d(TAG, "****Screen width in dps is "+getScreenWidthInDps());
 	}
 	
 	@Override
@@ -76,24 +74,16 @@ public class TargetCollectionActivity extends Activity  {
 		Log.i(TAG, "onDestroy");
         application.setCollectionActivity(null);
 	}
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.main, menu);
-		return true;
-	}
 
 
 	private OnItemClickListener itemClickListener = new OnItemClickListener() {
 	    public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-	    	
-	    	Log.d(TAG,"Position Clicked ["+position+"]");
+	    	Log.d(TAG,"Position tapped ["+position+"]");
 			Intent i = new Intent(getApplicationContext(), TargetItemActivity.class);
 			TargetItem target = application.getHunt().getTargetList().get(position);
 
             i.putExtra("hunt_id", target.getId());
 		    startActivity(i);
-	    	
 	    }
 	};
 	
@@ -137,7 +127,7 @@ public class TargetCollectionActivity extends Activity  {
 		public View getView(int position, View convertView, ViewGroup parent) {
 			TargetItem target = application.getHunt().getTargetList().get(position);
 
-			if (target.isFound()) {
+			if (!target.isFound()) {
                 return application.getRemoteAssetCache().getImageByName("target"+target.getId());
 			} 
 			else {

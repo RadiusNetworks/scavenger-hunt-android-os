@@ -20,6 +20,9 @@ import android.os.Bundle;
 import android.util.Log;
 
 /**
+ * this Activity displays a loading spinner while downloading
+ * dependencies from the network.
+ *
  * Created by dyoung on 1/28/14.
  */
 public class LoadingActivity extends Activity {
@@ -51,7 +54,7 @@ public class LoadingActivity extends Activity {
 
                     @Override
                     public void onDismiss(DialogInterface dialog) {
-                        // terminate this application
+                        // terminate this application, and not just this acdtivity
                         // TODO: is this kosher?
                         System.exit(0);
                     }

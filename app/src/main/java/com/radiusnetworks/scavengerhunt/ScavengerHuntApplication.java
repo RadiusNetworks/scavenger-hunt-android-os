@@ -13,16 +13,13 @@
  */
 package com.radiusnetworks.scavengerhunt;
 
-import android.app.AlertDialog;
 import android.app.Application;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.TaskStackBuilder;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.v4.app.NotificationCompat;
-import android.util.DisplayMetrics;
 import android.util.Log;
 
 import com.radiusnetworks.ibeacon.IBeacon;
@@ -43,6 +40,19 @@ import java.util.Map;
 
 /**
  * Created by dyoung on 1/24/14.
+ *
+ * This is the central application class for the Scavenger Hunt.  It is responsible for:
+ * 1. Initializing ProxomityKit, which downloads all the iBeacons associated with the hunt
+ *    along with their configured hunt_id values and image_url values.  It then starts
+ *    ranging and monitoring for these iBeacons, and will continue to do so even across
+ *    a reboot.
+ * 2. Downloads all the scavenger hunt badges ("target images") needed for both the found and
+ *    not found states of each target.
+ * 3. Updates the LoadingActivity with the status of the above download state.
+ * 4. Once loading completes, launches the MainActivity which allows the user to start the hunt.
+ * 5. Handles all ranging and monitoring callbacks for iBeacons.  When an iBeacon is ranged,
+ *    this class checks to see if it matches a scavenger hunt target and awards a badge if it is
+ *    close enough.  If an iBeacon comes into view, it sends a notification that a target is nearby.
  */
 public class ScavengerHuntApplication extends Application implements ProximityKitNotifier {
 
@@ -51,8 +61,6 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
     private ProximityKitManager manager;
     private Hunt hunt;
     private final long[] VIBRATOR_PATTERN = {0l, 500l, 0l}; // start immediately, vigrate for 500ms, sleep for 0ms
-    @SuppressWarnings("unused")
-    private RegionBootstrap regionBootstrap;
     @SuppressWarnings("unused")
     private BackgroundPowerSaver backgroundPowerSaver;
     private TargetCollectionActivity collectionActivity = null;
@@ -74,25 +82,27 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         manager.start(); // This starts ranging and monitoring for iBeacons defined in ProximityKit\
     }
 
-    // method gets called after the LoadingActivity starts.  We wait to start up ProximityKit until
-    // our activity is displayed, that way we will be able to display notifications to the user if
-    // there is a problem reaching the server
+    // method gets called after the LoadingActivity starts.
     public void onLoadingActivityCreated(LoadingActivity activity) {
         startCount++;
         this.loadingActivity = activity;
-        Log.d(TAG, "loadingActivity created for time #"+startCount);
-        if (startCount == 1 ) {
+        Log.d(TAG, "loadingActivity created for time #" + startCount);
+        if (startCount == 1) {
             if (loadingFailedTitle != null) {
                 showFailedErrorMessage();
             }
-        }
-        else {
+        } else {
             // we have alrady tried to start before, and apparently the user is resarting.
             // we will kick off loading dependencies again
             ProximityKitManager.getInstanceForApplication(this).sync();
         }
     }
 
+
+    // if loading dependencies fails, we want to display a message to the user
+    // we can only do so if the loading activity has already been created
+    // otherwise, we store the messages for display a second or so later
+    // when that acdtivity finally launches
     private void dependencyLoadingFailed(String title, String message) {
         Log.d(TAG, "dependencyLoadingFailed");
         this.loadingFailedTitle = title;
@@ -102,6 +112,7 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         }
     }
 
+    // actually get the loading activity to display an error message to the user
     private void showFailedErrorMessage() {
         Log.d(TAG, "showFailedErrorMesage");
         loadingActivity.failAndTerminate(loadingFailedTitle, loadingFailedMessage);
@@ -111,7 +122,7 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
     @Override
     public void iBeaconDataUpdate(IBeacon iBeacon, IBeaconData iBeaconData, DataProviderException e) {
         // Called every second with data from ProximityKit when an iBeacon defined in ProximityKit is nearby
-        Log.d(TAG, "iBeaconDataUpdate: "+iBeacon.getProximityUuid()+" "+iBeacon.getMajor()+" "+iBeacon.getMinor());
+        Log.d(TAG, "iBeaconDataUpdate: " + iBeacon.getProximityUuid() + " " + iBeacon.getMajor() + " " + iBeacon.getMinor());
         String huntId = null;
         if (iBeaconData != null) {
             huntId = iBeaconData.get("hunt_id");
@@ -121,61 +132,47 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
             return;
         }
         if (hunt == null) {
-            Log.d(TAG, "Hunt has not been initialized from PK yet.  Ignoring all iBeacons");
+            // Hunt has not been initialized from PK yet.  Ignoring all iBeacons
             return;
         }
         TargetItem target = hunt.getTargetById(huntId);
         if (target == null) {
-            Log.d(TAG, "The iBeacon I just saw has a hunt_id of "+huntId+", but it was not part of the scavenger hunt when this app was started.");
+            Log.w(TAG, "The iBeacon I just saw has a hunt_id of " + huntId + ", but it was not part of the scavenger hunt when this app was started.");
             return;
         }
 
 
-            if (hunt.getElapsedTime() != 0) {
-                        if (iBeacon.getAccuracy() < MINIMUM_TRIGGER_DISTANCE_METERS && !target.isFound()) {
-                            Log.d(TAG,"found an item");
-                            target.setFound(true);
-                            hunt.saveToPreferences(collectionActivity);
-                            if (collectionActivity != null) {
-                                Log.i(TAG, "calling showItemFound on collection activity");
-                                collectionActivity.showItemFound();
-                                if (hunt.everythingFound()) {
-                                    // switch to MainActivity to show player he/she has won
-                                    Log.d(TAG,"game is won");
-                                    Intent i = new Intent(collectionActivity, MainActivity.class);
-                                    i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                                    startActivity(i);
-                                }
-                            }
-                            else {
-                                Log.i(TAG, "NOT calling showItemFound on collection activity -- because it is null");
-                            }
-                        }
-                        else {
-                            Log.d(TAG, "item "+iBeacon.getMinor()+"is not near: "+iBeacon.getProximity()+", accuracy="+iBeacon.getAccuracy());
-                        }
-
+        if (hunt.getElapsedTime() != 0) {
+            if (iBeacon.getAccuracy() < MINIMUM_TRIGGER_DISTANCE_METERS && !target.isFound()) {
+                Log.d(TAG, "found an item");
+                target.setFound(true);
+                hunt.saveToPreferences(collectionActivity);
+                if (collectionActivity != null) {
+                    collectionActivity.showItemFound();
+                    if (hunt.everythingFound()) {
+                        // switch to MainActivity to show player he/she has won
+                        Log.d(TAG, "game is won");
+                        Intent i = new Intent(collectionActivity, MainActivity.class);
+                        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                        startActivity(i);
                     }
-            else {
-                Log.d(TAG, "hunt hasn't started, so I am ignoring everything");
+                }
             }
-            if (itemActivity != null) {
-                Log.i(TAG,"got ranging info that might be for the minor being shown");
-                Log.i(TAG,"updating "+itemActivity+" with accuracy value of "+iBeacon.getAccuracy());
-                itemActivity.updateDistance(iBeacon, iBeaconData);
-
-            }
+        } else {
+            Log.d(TAG, "hunt hasn't started, so all ibeacon detections are being ignored");
+        }
+        if (itemActivity != null) {
+            itemActivity.updateDistance(iBeacon, iBeaconData);
+        }
     }
-
 
     @Override
     public void didEnterRegion(Region region) {
         // Called when one of the iBeacons defined in ProximityKit first appears
         Log.d(TAG, "didEnterRegion");
         if (hunt.getElapsedTime() == 0) {
-            Log.d(TAG, "Not sending notification because the hunt has not been started yet.  Elapsed time is "+hunt.getElapsedTime());
-        }
-        else {
+            Log.d(TAG, "Not sending notification because the hunt has not been started yet.  Elapsed time is " + hunt.getElapsedTime());
+        } else {
             Log.d(TAG, "Sending notification.");
             sendNotification();
         }
@@ -199,7 +196,7 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         Log.d(TAG, "proximityKit didSync.  kit is " + manager.getKit());
 
         ArrayList<TargetItem> targets = new ArrayList<TargetItem>();
-        Map<String,String> urlMap = new HashMap<String,String>();
+        Map<String, String> urlMap = new HashMap<String, String>();
 
         for (KitIBeacon iBeacon : manager.getKit().getIBeacons()) {
             String huntId = iBeacon.getAttributes().get("hunt_id");
@@ -208,21 +205,28 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
                 targets.add(target);
                 String imageUrl = iBeacon.getAttributes().get("image_url");
                 if (imageUrl == null) {
-                    Log.e(TAG, "ERROR: No image_url specified in ProximityKit for item with hunt_id="+ huntId);
+                    Log.e(TAG, "ERROR: No image_url specified in ProximityKit for item with hunt_id=" + huntId);
                 }
-                urlMap.put("target"+huntId+"_found", variantTargetImageUrlForBaseUrlString(imageUrl, true));
-                urlMap.put("target"+huntId, variantTargetImageUrlForBaseUrlString(imageUrl, false));
+                urlMap.put("target" + huntId + "_found", variantTargetImageUrlForBaseUrlString(imageUrl, true));
+                urlMap.put("target" + huntId, variantTargetImageUrlForBaseUrlString(imageUrl, false));
             }
         }
 
         // The line below will load the saved state of the hunt from the phone's preferences
         hunt = Hunt.loadFromPreferneces(this);
+        // TODO: this only checks that the size is the same, but we should really check that the ids
+        // are all the same, too.
         if (hunt.getTargetList().size() != targets.size()) {
             Log.w(TAG, "the number of targets in the hunt has changed from what we have in the settings.  starting over");
             this.hunt = new Hunt(targets);
             this.hunt.saveToPreferences(this);
         }
 
+        // After we have all our data from ProximityKit, we need to download the images and cache them
+        // for display in the app.  We do this every time, so that the app can update the images after
+        // later, and have users get the update if they restart the app.  This takes time, so if you
+        // don't want to do this, then only execute this code if validateRequiredImagesPresent()
+        // returns false.
         remoteAssetCache = new RemoteAssetCache(this);
         remoteAssetCache.downloadAssets(urlMap, new AssetFetcherCallback() {
             @Override
@@ -235,18 +239,19 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
                 dependencyLoadFinished();
             }
         });
-
-
     }
 
     @Override
     public void didFailSync(Exception e) {
         // called when ProximityKit data are requested from the server, but the request fails
-        Log.w(TAG, "proximityKit didFailSync due to "+e+"  We may be offline.");
+        Log.w(TAG, "proximityKit didFailSync due to " + e + "  We may be offline.");
         hunt = Hunt.loadFromPreferneces(this);
         this.dependencyLoadFinished();
     }
 
+    // This method is called when we have tried to download all dependencies (ProximityKit data and
+    // all target images.)  This may or may not have failed, so we check that everything loaded
+    // properly.
     public void dependencyLoadFinished() {
         Log.d(TAG, "all dependencies loaded");
         if (ProximityKitManager.getInstanceForApplication(this).getKit() == null || hunt.getTargetList().size() == 0) {
@@ -255,29 +260,31 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         }
 
         if (validateRequiredImagesPresent()) {
+            // Yes, we have everything we need to start up.  Let's start the Main Activity!
             Intent i = new Intent(this, MainActivity.class);
             i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(i);
             return;
-        }
-        else {
+        } else {
             dependencyLoadingFailed("Network error", "Can't download images.  Please verify your network connection and try again.");
             return;
         }
     }
 
+    // Checks to see that one found and one not found image has been downloaded for each target
     private boolean validateRequiredImagesPresent() {
         boolean missing = false;
-        for (TargetItem target: hunt.getTargetList() ) {
-            if (remoteAssetCache.getImageByName("target"+target.getId()) == null) {
+        for (TargetItem target : hunt.getTargetList()) {
+            if (remoteAssetCache.getImageByName("target" + target.getId()) == null) {
                 missing = true;
             }
-            if (remoteAssetCache.getImageByName("target"+target.getId()+"_found") == null) {
+            if (remoteAssetCache.getImageByName("target" + target.getId() + "_found") == null) {
                 missing = true;
             }
         }
         return !missing;
     }
+
     public Hunt getHunt() {
         return hunt;
     }
@@ -299,8 +306,13 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
     }
 
 
-    public RemoteAssetCache getRemoteAssetCache() { return remoteAssetCache; }
+    public RemoteAssetCache getRemoteAssetCache() {
+        return remoteAssetCache;
+    }
 
+    /*
+     Sends a notification to the user when a scavenger hunt beacon is nearby.
+     */
     private void sendNotification() {
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(this)
@@ -324,21 +336,34 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         notificationManager.notify(1, builder.build());
     }
 
+    /*
+     Converts a target image URL to a variant needed for this platform.  the variant URL optionally
+     adds a _found suffix.  It also gets uagmented with a _tablet suffix if this is a device with
+     a screen width >= 600dp.  In addition a density suffix is added as needed for the device.
+
+     So a URL like this:
+
+     http://mysite.com/target1.jpg
+
+     might become:
+
+     http://mysite.com/target1_found_tablet_xhdpi.jpg
+
+     */
     private String variantTargetImageUrlForBaseUrlString(String baseUrlString, boolean found) {
 
         int extensionIndex = baseUrlString.lastIndexOf(".");
         if (extensionIndex == -1) {
             return null;
         }
-        Log.d(TAG, "Extension Index of "+baseUrlString+" is "+extensionIndex);
+        Log.d(TAG, "Extension Index of " + baseUrlString + " is " + extensionIndex);
 
         String extension = baseUrlString.substring(extensionIndex);
-        String prefix = baseUrlString.substring(0,extensionIndex);
+        String prefix = baseUrlString.substring(0, extensionIndex);
         String suffix;
         if (found) {
             suffix = "_found";
-        }
-        else {
+        } else {
             suffix = "";
         }
         float screenWidthDp = getResources().getDisplayMetrics().widthPixels / getResources().getDisplayMetrics().density;
@@ -362,7 +387,7 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         }
 
         suffix += densityString;
-        return prefix+suffix+extension;
+        return prefix + suffix + extension;
     }
 
 }

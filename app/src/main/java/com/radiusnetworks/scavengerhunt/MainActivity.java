@@ -34,9 +34,13 @@ import android.widget.TextView;
 
 
 /**
-
  * @author dyoung
  *
+ * This activity displays the status of the scavenger hunt, which can include four separate layouts:
+ * - unstarted  (user has not clicked the hunt start button yet)
+ * - started (user has cliecked the start button but has not founda ll the targets)
+ * - finished (user has found all the targets)
+ * - redeemed (user has shown the completion code)
  */
 public class MainActivity extends Activity  {
 	public static final String TAG = "MainActivity";
@@ -84,8 +88,6 @@ public class MainActivity extends Activity  {
     		builder.setMessage("All found locations will be cleared.");    		
     	}
 		builder.setPositiveButton(android.R.string.cancel, null);
-		// Do not actually give a "Force start" option to users.  This is here just 
-		// for testing on emulators
 		builder.setNegativeButton(android.R.string.ok, new OnClickListener() {
 			@Override
 			public void onClick(DialogInterface arg0, int arg1) {
@@ -105,7 +107,9 @@ public class MainActivity extends Activity  {
 
 	}
 	
-	
+	/*
+	  This method figures out the state of the hunt, and shows the proper layout view
+	 */
     private void updateViewsForHuntState() {
     	Hunt hunt = application.getHunt();
     	if (hunt.everythingFound()) {

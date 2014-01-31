@@ -28,7 +28,15 @@ import java.net.URL;
 
 /**
  * Created by dyoung on 12/10/13.
+ *
+ * Asynchronously fetches a single static asset from a server
+ * given a URL and stores it in the Android file system in the application
+ * root directory under the filename.  Calls back to the requestComplete or RequestFailed
+ * of the passed AssetFetcherCallback depending on how the request
+ * goes.  If successful, the file will have been saved in the passed location.
+ *
  */
+
 public class AssetFetcher extends AsyncTask<Void, Void, Void> {
 
     private static final String TAG = "AsynchReader";
