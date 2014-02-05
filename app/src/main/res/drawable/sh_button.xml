@@ -3,14 +3,14 @@
 android:shape="rectangle" android:padding="10dp">
 <!--  endColor is top when angle is 90 -->
     <gradient
-     android:startColor="#0192c7" 
-     android:centerColor="#30b5e6"
-     android:endColor="#0daae3" 
+     android:startColor="#f1f1f1"
+     android:centerColor="#ffffff"
+     android:endColor="#f1f1f1"
      android:angle="90" />
     <corners
-     android:bottomRightRadius="4dp"
-     android:bottomLeftRadius="4dp"
-     android:topLeftRadius="4dp"
-     android:topRightRadius="4dp"/>
+     android:bottomRightRadius="5dp"
+     android:bottomLeftRadius="5dp"
+     android:topLeftRadius="5dp"
+     android:topRightRadius="5dp"/>
 </shape>
 
