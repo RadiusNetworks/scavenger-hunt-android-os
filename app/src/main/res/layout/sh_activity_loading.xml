@@ -18,7 +18,7 @@
         android:layout_height="wrap_content"
         android:id="@+id/progressBar"
         android:clickable="true"
-        android:layout_below="@+id/attribution"
+        android:layout_below="@+id/attributionContainer"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="90dp" />
 
@@ -28,7 +28,7 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="Loading Images..."
         android:id="@+id/textView"
-        android:layout_below="@+id/attribution"
+        android:layout_below="@+id/attributionContainer"
         android:layout_centerHorizontal="true"
         android:textColor="#FFFFFF"
         android:layout_marginTop="38dp" />
@@ -60,16 +60,33 @@
         android:gravity="center"
         android:layout_centerHorizontal="true" />
 
+    <RelativeLayout
+        android:id="@+id/attributionContainer"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_below="@+id/title2"
+        android:layout_centerHorizontal="true"
+        android:layout_centerInParent="true">
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:textColor="#CCCCFF"
-        android:text="Powered by Radius Networks"
+        android:textColor="#ffffff"
+        android:text="Powered by "
         android:textSize="20dp"
-        android:layout_centerHorizontal="true"
-        android:id="@+id/attribution"
-        android:layout_below="@+id/title2" />
+        android:id="@+id/powered_by"
+         />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textColor="#e56236"
+        android:text="Radius Networks"
+        android:textSize="20dp"
+        android:id="@+id/attribution"
+        android:layout_toRightOf="@+id/powered_by" />
+  </RelativeLayout>
 
 </RelativeLayout>

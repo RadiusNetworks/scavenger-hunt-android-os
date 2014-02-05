@@ -13,12 +13,15 @@
  */
 package com.radiusnetworks.scavengerhunt;
 
+import android.app.Activity;
 import android.app.Application;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
@@ -29,7 +32,7 @@ import com.radiusnetworks.ibeacon.client.DataProviderException;
 import com.radiusnetworks.proximity.ProximityKitNotifier;
 import com.radiusnetworks.proximity.ProximityKitManager;
 import com.radiusnetworks.proximity.ibeacon.powersave.BackgroundPowerSaver;
-import com.radiusnetworks.proximity.ibeacon.startup.RegionBootstrap;
+import com.radiusnetworks.proximity.licensing.PropertiesFile;
 import com.radiusnetworks.proximity.model.KitIBeacon;
 import com.radiusnetworks.scavengerhunt.assets.AssetFetcherCallback;
 import com.radiusnetworks.scavengerhunt.assets.RemoteAssetCache;
@@ -69,32 +72,67 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
     private RemoteAssetCache remoteAssetCache;
     private String loadingFailedTitle;
     private String loadingFailedMessage;
+    private boolean codeNeeded;
     int startCount = 0;
 
 
     @Override
     public void onCreate() {
         super.onCreate();
+        Log.d(TAG, "Application onCreate.  Hunt is "+hunt);
         backgroundPowerSaver = new BackgroundPowerSaver(this);
         manager = ProximityKitManager.getInstanceForApplication(this);
         manager.getIBeaconManager().LOG_DEBUG = true;
         manager.setNotifier(this);
-        manager.start(); // This starts ranging and monitoring for iBeacons defined in ProximityKit\
+
+        // TODO: remove this code, it is for the appstore version only
+        if (!new PropertiesFile().exists()) {
+            this.codeNeeded = true;
+            return;
+        }
+        else {
+            startPk(null);
+        }
     }
 
-    // method gets called after the LoadingActivity starts.
-    public void onLoadingActivityCreated(LoadingActivity activity) {
-        startCount++;
+    public void startPk(String code) {
+        Log.d(TAG, "startPk called with code "+code );
+        if (code != null) {
+            manager.restart(code);
+        }
+        else {
+            manager.start(); // This starts ranging and monitoring for iBeacons defined in ProximityKit\
+        }
+    }
+
+    public void startOver(Activity activity) {
+        if (!new PropertiesFile().exists()) {
+            Log.d(TAG, "clearing shared preferences");
+            SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
+            String code = settings.getString("code", null);
+            SharedPreferences.Editor editor = settings.edit();
+            editor.clear();
+            editor.putString("code", code);
+            editor.commit();
+            hunt = null;
+            remoteAssetCache = new RemoteAssetCache(this);
+            remoteAssetCache.clear();
+
+            this.codeNeeded = true;
+        }
+        else {
+            hunt.reset();
+        }
+
+        Intent i = new Intent(activity, LoadingActivity.class);
+        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(i);
+    }
+
+    public void setLoadingActivity(LoadingActivity activity) {
         this.loadingActivity = activity;
-        Log.d(TAG, "loadingActivity created for time #" + startCount);
-        if (startCount == 1) {
-            if (loadingFailedTitle != null) {
-                showFailedErrorMessage();
-            }
-        } else {
-            // we have alrady tried to start before, and apparently the user is resarting.
-            // we will kick off loading dependencies again
-            ProximityKitManager.getInstanceForApplication(this).sync();
+        if (this.loadingFailedTitle != null) {
+            showFailedErrorMessage();
         }
     }
 
@@ -116,6 +154,7 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
     private void showFailedErrorMessage() {
         Log.d(TAG, "showFailedErrorMesage");
         loadingActivity.failAndTerminate(loadingFailedTitle, loadingFailedMessage);
+        loadingFailedTitle = null;
     }
 
 
@@ -195,6 +234,10 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         // Called when ProximityKit data are updated from the server
         Log.d(TAG, "proximityKit didSync.  kit is " + manager.getKit());
 
+        if (loadingActivity != null && loadingActivity.isValidatingCode()) {
+            loadingActivity.codeValidationPassed();
+        }
+
         ArrayList<TargetItem> targets = new ArrayList<TargetItem>();
         Map<String, String> urlMap = new HashMap<String, String>();
 
@@ -253,6 +296,11 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
     @Override
     public void didFailSync(Exception e) {
         // called when ProximityKit data are requested from the server, but the request fails
+        if (loadingActivity != null && loadingActivity.isValidatingCode()) {
+            Log.w(TAG, "proximityKit didFailSync due to " + e + "  bad code entered?");
+            loadingActivity.codeValidationFailed(e);
+            return;
+        }
         Log.w(TAG, "proximityKit didFailSync due to " + e + "  We may be offline.");
         hunt = Hunt.loadFromPreferneces(this);
         this.dependencyLoadFinished();
@@ -313,6 +361,8 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
     public void setItemActivity(TargetItemActivity itemActivity) {
         this.itemActivity = itemActivity;
     }
+
+    public boolean isCodeNeeded() { return this.codeNeeded; }
 
 
     public RemoteAssetCache getRemoteAssetCache() {

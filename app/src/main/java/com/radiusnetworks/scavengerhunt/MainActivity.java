@@ -62,6 +62,11 @@ public class MainActivity extends Activity  {
 	@Override
 	protected void onResume() {
 		super.onResume();
+        // This is needed for the case of hitting back on the loading screen after a restart
+        if (application.getHunt() == null) {
+            finish();
+            return;
+        }
 		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 		updateViewsForHuntState();
 	}
@@ -91,8 +96,7 @@ public class MainActivity extends Activity  {
 		builder.setNegativeButton(android.R.string.ok, new OnClickListener() {
 			@Override
 			public void onClick(DialogInterface arg0, int arg1) {
-                application.getHunt().reset();
-				updateViewsForHuntState();	
+                application.startOver(MainActivity.this);
 			}
 			
 		});
@@ -141,7 +145,7 @@ public class MainActivity extends Activity  {
 
 					@Override
 					public void onDismiss(DialogInterface dialog) {
-						finish();
+						/*finish();*/
 					}
 					
 				});

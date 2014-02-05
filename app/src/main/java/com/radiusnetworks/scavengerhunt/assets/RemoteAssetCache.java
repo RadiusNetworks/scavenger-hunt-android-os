@@ -19,6 +19,7 @@ import android.graphics.BitmapFactory;
 import android.util.Log;
 import android.widget.ImageView;
 
+import java.io.File;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -156,6 +157,20 @@ public class RemoteAssetCache {
         ImageView imageView = new ImageView(context);
         imageView.setImageBitmap(bitmap);
         return imageView;
+    }
+
+    /**
+     * Deletes all cached files
+     */
+    public void clear() {
+        File file = new File(context.getFilesDir().getAbsolutePath());
+        String[] files;
+
+        files = file.list();
+        for (int i=0; i < files.length; i++) {
+            Log.d(TAG, "deleting "+files[i]);
+            new File(file, files[i]).delete();
+        }
     }
 
 

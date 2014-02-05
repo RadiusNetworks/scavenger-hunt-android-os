@@ -1,0 +1,110 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mainLayout"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@drawable/bg"
+    android:gravity="center"
+    tools:context=".LoadingActivity" >
+
+
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="iBeacon"
+        android:textStyle="bold"
+        android:textColor="#FFFFFF"
+        android:id="@+id/title1"
+        android:textSize="40dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textStyle="bold"
+        android:text="Scavenger Hunt"
+        android:textColor="#FFFFFF"
+        android:id="@+id/title2"
+        android:layout_below="@+id/title1"
+        android:layout_marginTop="-10dp"
+        android:textSize="40dp"
+        android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textColor="#CCCCFF"
+        android:text="Powered by Radius Networks"
+        android:textSize="20dp"
+        android:layout_centerHorizontal="true"
+        android:id="@+id/attribution"
+        android:layout_below="@+id/title2" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Enter 8-Digit Hunt Code:"
+        android:id="@+id/enterCode"
+        android:layout_below="@+id/attribution"
+        android:layout_centerHorizontal="true"
+        android:textColor="#FFFFFF"
+        android:layout_marginTop="38dp" />
+
+    <RelativeLayout
+        android:id="@+id/buttonWithInput"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_below="@+id/enterCode"
+        android:layout_centerInParent="true">
+
+
+
+    <EditText
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/code"
+        android:layout_centerInParent="true"
+
+
+        android:inputType="number" />
+    <Button
+        android:id="@+id/ok_button"
+        style="@style/sh_custom_button"
+        android:layout_width="100dp"
+        android:layout_marginLeft="5dp"
+        android:layout_height="wrap_content"
+        android:onClick="onCodeOkClicked"
+        android:text="OK"
+        android:textColor="#FFFFFF"
+        android:layout_toRightOf="@+id/code"
+        android:layout_centerInParent="true"/>
+
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/codeProgress"
+            android:layout_alignParentTop="true"
+            android:layout_alignStart="@+id/ok_button"
+            android:indeterminate="true" />
+    </RelativeLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Help"
+        android:id="@+id/help"
+        android:layout_below="@+id/buttonWithInput"
+        android:layout_centerHorizontal="true"
+        android:textColor="#ffffff"
+        android:onClick="onHelpTapped" />
+
+</RelativeLayout>
