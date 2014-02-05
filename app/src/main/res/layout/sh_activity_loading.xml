@@ -92,7 +92,7 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:textColor="#ffffff"
-        android:text="Radius Networks"
+        android:text="@string/rn_underline"
         android:textSize="20dp"
         android:id="@+id/attribution"
         android:layout_toRightOf="@+id/powered_by" />
