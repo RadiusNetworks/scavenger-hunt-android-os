@@ -81,17 +81,17 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:textColor="#ffffff"
+        android:textColor="#aee9ff"
         android:text="Powered by "
         android:textSize="20dp"
         android:id="@+id/powered_by"
-         />
+        android:textStyle="italic" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:textColor="#e56236"
+        android:textColor="#ffffff"
         android:text="Radius Networks"
         android:textSize="20dp"
         android:id="@+id/attribution"
