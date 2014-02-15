@@ -17,6 +17,7 @@ package com.radiusnetworks.scavengerhunt;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -37,8 +38,10 @@ public class Hunt {
     private String deviceUuid;
     private List<TargetItem> targetList;
 
-    public Hunt(List<TargetItem> targets) {
+    public Hunt(Context context, List<TargetItem> targets) {
         this.targetList = targets;
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+        this.deviceUuid = settings.getString("sh_device_uuid", this.deviceUuid == null ? java.util.UUID.randomUUID().toString() : this.deviceUuid);
     }
 
     private Hunt() {
@@ -52,7 +55,6 @@ public class Hunt {
         }
         return null;
     }
-
 
     public void reset() {
         this.startTime = 0;
@@ -101,6 +103,10 @@ public class Hunt {
         return this.targetList;
     }
 
+    public void sortTargetList() {
+        Collections.sort(this.targetList);
+    }
+
     public String getDeviceUuid() {
         return this.deviceUuid;
     }
@@ -146,7 +152,7 @@ public class Hunt {
         editor.commit();
     }
 
-    public static Hunt loadFromPreferneces(Context context) {
+    public static Hunt loadFromPreferences(Context context) {
         Hunt hunt = new Hunt();
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
         hunt.startTime = settings.getLong("sh_start_time", hunt.startTime);
@@ -154,6 +160,7 @@ public class Hunt {
         String targetIdsFound = settings.getString("sh_target_ids_found", "");
         String targetIds = settings.getString("sh_target_ids", "");
         List<String> foundTargetIdList = Arrays.asList(targetIdsFound.split(","));
+        Log.d(TAG, "device uuid is "+hunt.deviceUuid);
 
         hunt.targetList = new ArrayList<TargetItem>();
         for (String targetId : targetIds.split(",")) {

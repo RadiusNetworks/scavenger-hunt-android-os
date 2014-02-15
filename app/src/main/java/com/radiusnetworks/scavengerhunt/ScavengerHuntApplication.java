@@ -125,7 +125,7 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         }
 
         Intent i = new Intent(activity, LoadingActivity.class);
-        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(i);
     }
 
@@ -197,6 +197,9 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
                     }
                 }
             }
+            else {
+                Log.d(TAG, "null collection activity");
+            }
         } else {
             Log.d(TAG, "hunt hasn't started, so all ibeacon detections are being ignored");
         }
@@ -238,6 +241,9 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
             loadingActivity.codeValidationPassed();
         }
 
+        // TODO: this should not be necessary
+        manager.getIBeaconManager().setDataNotifier(this);
+
         ArrayList<TargetItem> targets = new ArrayList<TargetItem>();
         Map<String, String> urlMap = new HashMap<String, String>();
 
@@ -256,7 +262,7 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         }
 
         // The line below will load the saved state of the hunt from the phone's preferences
-        hunt = Hunt.loadFromPreferneces(this);
+        hunt = Hunt.loadFromPreferences(this);
         boolean targetListChanged = hunt.getTargetList().size() != targets.size();
         for (TargetItem target : hunt.getTargetList() ) {
             boolean itemFound = false;
@@ -270,7 +276,7 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         }
         if (targetListChanged) {
             Log.w(TAG, "the targets in the hunt has changed from what we have in the settings.  starting over");
-            this.hunt = new Hunt(targets);
+            this.hunt = new Hunt(this,targets);
             this.hunt.saveToPreferences(this);
         }
 
@@ -302,7 +308,7 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
             return;
         }
         Log.w(TAG, "proximityKit didFailSync due to " + e + "  We may be offline.");
-        hunt = Hunt.loadFromPreferneces(this);
+        hunt = Hunt.loadFromPreferences(this);
         this.dependencyLoadFinished();
     }
 
@@ -317,8 +323,9 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         }
 
         if (validateRequiredImagesPresent()) {
-            // Yes, we have everything we need to start up.  Let's start the Main Activity!
-            Intent i = new Intent(this, MainActivity.class);
+            // Yes, we have everything we need to start up.  Let's start the Collection Activity
+            this.hunt.start();
+            Intent i = new Intent(this, TargetCollectionActivity.class);
             i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP |Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(i);
             return;
@@ -396,9 +403,9 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
     }
 
     /*
-     Converts a target image URL to a variant needed for this platform.  the variant URL optionally
-     adds a _found suffix.  It also gets uagmented with a _tablet suffix if this is a device with
-     a screen width >= 600dp.  In addition a density suffix is added as needed for the device.
+     Converts a target image URL to a variant needed for this platform.  The variant URL might
+     add a suffix indicating a larger size for the image.  A suffix is also added if the target
+     is found.
 
      So a URL like this:
 
@@ -406,7 +413,7 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
 
      might become:
 
-     http://mysite.com/target1_found_tablet_xhdpi.jpg
+     http://mysite.com/target1_found_624.jpg
 
      */
     private String variantTargetImageUrlForBaseUrlString(String baseUrlString, boolean found) {
@@ -425,27 +432,18 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         } else {
             suffix = "";
         }
-        float screenWidthDp = getResources().getDisplayMetrics().widthPixels / getResources().getDisplayMetrics().density;
+        float screenWidthPixels = getResources().getDisplayMetrics().widthPixels;
 
-        if (screenWidthDp > 600) {
-            suffix += "_tablet";
+        if (screenWidthPixels > 260*2*1.2) {
+            suffix += "_260";
         }
-        double density = getResources().getDisplayMetrics().density;
-        String densityString = "_ldpi";
-        if (density > 1.0) {
-            densityString = "_mdpi";
+        else if (screenWidthPixels > 312*2*1.2) {
+            suffix += "_312";
         }
-        if (density > 1.5) {
-            densityString = "_hdpi";
-        }
-        if (density > 2.0) {
-            densityString = "_xhdpi";
-        }
-        if (density > 3.0) {
-            densityString = "_xxhdpi";
+        else if (screenWidthPixels > 624*2*1.2) {
+            suffix += "_624";
         }
 
-        suffix += densityString;
         return prefix + suffix + extension;
     }
 

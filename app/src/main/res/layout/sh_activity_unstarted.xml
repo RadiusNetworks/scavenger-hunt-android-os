@@ -28,27 +28,18 @@
         android:layout_below="@+id/sh_textView1"
         android:layout_marginTop="23dp"
         android:textColor="#FFFFFF"
-        android:text="On the next page, you will see a list of scavenger hunt badges to find and collect.\n\nFind a location and look for the lightning bolt symbol below.  When you are within 10 meters of the symbol, you will receive a notification and a colored badge will appear on your list." />
+        android:text="On the next page, you will see a list of scavenger hunt badges to find and collect.\n\nGo to the location indicated by each badge.  When you are within 10 meters, you will receive a notification and a colored badge will appear on your list." />
 
     <Button
         android:id="@+id/sh_start_button"
 		style="@style/sh_custom_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/imageView1"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="21dp"
         android:onClick="onStartClicked"
         android:text="Start Hunt"
-        android:textColor="#3abeee" />
-
-    <ImageView
-        android:id="@+id/imageView1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/sh_textView2"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="31dp"
-        android:src="@drawable/icon" />
+        android:textColor="#3abeee"
+        android:layout_below="@+id/sh_textView2" />
 
 </RelativeLayout>

@@ -15,19 +15,26 @@ package com.radiusnetworks.scavengerhunt;
 
 import com.radiusnetworks.ibeacon.IBeaconManager;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.preference.PreferenceManager;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
+import android.widget.EditText;
 import android.widget.GridView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 /**
@@ -61,7 +68,29 @@ public class TargetCollectionActivity extends Activity  {
 			screenSizeSuffix = "_tablet";
 		}
         application.setCollectionActivity(this);
+        application.getHunt().sortTargetList();
+
+        View button = (TextView) this.findViewById(R.id.start_over_button);
+        button.setOnClickListener( new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                final AlertDialog.Builder builder = new AlertDialog.Builder(TargetCollectionActivity.this);
+                builder.setTitle("Are you sure?");	// Are you sure you are finished?  You will not be allowed to return to this page
+                builder.setMessage("All found locations will be cleared.");
+                builder.setPositiveButton(android.R.string.cancel, null);
+                builder.setNegativeButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface arg0, int arg1) {
+                        application.startOver(TargetCollectionActivity.this);
+                    }
+
+                });
+                AlertDialog dialog = builder.create();
+                dialog.show();
+            }
+        });
 	}
+
 	
 	@Override
 	protected void onResume() {
@@ -124,15 +153,34 @@ public class TargetCollectionActivity extends Activity  {
 		}
 
 		@Override
-		public View getView(int position, View convertView, ViewGroup parent) {
+		public View getView(final int position, View convertView, ViewGroup parent) {
 			TargetItem target = application.getHunt().getTargetList().get(position);
+            View view;
 
 			if (!target.isFound()) {
-                return application.getRemoteAssetCache().getImageByName("target"+target.getId());
+                view = application.getRemoteAssetCache().getImageByName("target"+target.getId());
 			} 
 			else {
-                return application.getRemoteAssetCache().getImageByName("target"+target.getId()+"_found");
+                view =application.getRemoteAssetCache().getImageByName("target"+target.getId()+"_found");
 			}
+            ViewTreeObserver viewTreeObserver = view.getViewTreeObserver();
+            final View observedView = view;
+            if (viewTreeObserver.isAlive()) {
+                viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                    @Override
+                    public void onGlobalLayout() {
+                        Log.d(TAG, "ONLAYOUT Target image " + position + " has measuredWidth=" + observedView.getMeasuredWidth() + " measuredHeight=" + observedView.getMeasuredHeight()+ " width="+observedView.getWidth()+" height="+observedView.getHeight());
+                    }
+                });
+                viewTreeObserver.addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+                    public boolean onPreDraw() {
+                        Log.d(TAG, "PREDRAW Target image " + position + " has measuredWidth=" + observedView.getMeasuredWidth() + " measuredHeight=" + observedView.getMeasuredHeight()+ " width="+observedView.getWidth()+" height="+observedView.getHeight());
+                        return true;
+                    }
+                });
+            }
+
+            return view;
 		}
 		
 	}

@@ -18,7 +18,7 @@ package com.radiusnetworks.scavengerhunt;
  * basically just a wrapper around the ProximityKit hunt_id attibute
  * value and a flag to whether or not this target has been found
  */
-public class TargetItem {
+public class TargetItem implements Comparable<TargetItem> {
 	private String id;
 	private boolean found;
 
@@ -37,4 +37,9 @@ public class TargetItem {
 	public void setFound(boolean found) {
 		this.found = found;
 	}
+
+    @Override
+    public int compareTo(TargetItem targetItem) {
+        return this.id.compareTo(targetItem.id);
+    }
 }

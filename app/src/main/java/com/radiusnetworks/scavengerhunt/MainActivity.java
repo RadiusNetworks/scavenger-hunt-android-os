@@ -50,8 +50,7 @@ public class MainActivity extends Activity  {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
         application = (ScavengerHuntApplication) this.getApplication();
-		updateViewsForHuntState();	
-		checkPrerequisites();
+		updateViewsForHuntState();
 	}
 	
 	@Override
@@ -132,55 +131,6 @@ public class MainActivity extends Activity  {
     	}
     }
 
-	private boolean checkPrerequisites() {
-		IBeaconManager iBeaconManager = IBeaconManager.getInstanceForApplication(this);
 
-		try {
-			if (!iBeaconManager.checkAvailability()) {
-				final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-				builder.setTitle("Bluetooth not enabled");			
-				builder.setMessage("The scavenger hunt requires that Bluetooth be turned on.  Please enable bluetooth in settings.");
-				builder.setPositiveButton(android.R.string.ok, null);
-				builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
-
-					@Override
-					public void onDismiss(DialogInterface dialog) {
-						/*finish();*/
-					}
-					
-				});
-				builder.show();
-				return false;
-			}			
-		}
-		catch (BleNotAvailableException e) {
-			return false;
-		}
-
-        try {
-            WifiManager wifi = (WifiManager)getSystemService(Context.WIFI_SERVICE);
-            if (wifi.isWifiEnabled() && Build.MODEL.equals("Nexus 4") || Build.MODEL.equals("Nexus 7")){
-                final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setTitle("Please Note");
-                builder.setMessage("There is a known issue with the Nexus 4 and Nexus 7 devices where WiFi and Bluetooth can disrupt each other.  We recommend disabling WiFi while using the Scavenger Hunt.");
-                builder.setPositiveButton(android.R.string.ok, null);
-                builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
-
-                    @Override
-                    public void onDismiss(DialogInterface dialog) {
-                    }
-
-                });
-                builder.show();
-                return false;
-
-            }
-        }
-        catch (Exception e) {
-            Log.e(TAG, "Can't access wifi manager due to exception", e);
-        }
-		return true;
-	}
-    
 	
 }
