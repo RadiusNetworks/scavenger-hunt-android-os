@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">ScavengerHunt</string>
+    <string name="app_name">Scavenger Hunt</string>
     <string name="action_settings">Settings</string>
     <string name="scanning">Scanning for iBeacons...</string>
     <string name="rn_underline"><u>Radius Networks</u></string>
