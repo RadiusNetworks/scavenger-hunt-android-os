@@ -91,7 +91,11 @@ public class TargetCollectionActivity extends Activity  {
         });
 	}
 
-	
+	@Override
+    public void onBackPressed() {
+        finish();
+    }
+
 	@Override
 	protected void onResume() {
 		super.onResume();
@@ -142,14 +146,15 @@ public class TargetCollectionActivity extends Activity  {
 			return application.getHunt().getTargetList().size();
 		}
 
+
 		@Override
-		public Object getItem(int arg0) {
+		public Object getItem(int position) {
 			return null;
 		}
 
 		@Override
-		public long getItemId(int arg0) {
-			return 0;
+		public long getItemId(int position) {
+			return position;
 		}
 
 		@Override
@@ -163,23 +168,6 @@ public class TargetCollectionActivity extends Activity  {
 			else {
                 view =application.getRemoteAssetCache().getImageByName("target"+target.getId()+"_found");
 			}
-            ViewTreeObserver viewTreeObserver = view.getViewTreeObserver();
-            final View observedView = view;
-            if (viewTreeObserver.isAlive()) {
-                viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-                    @Override
-                    public void onGlobalLayout() {
-                        Log.d(TAG, "ONLAYOUT Target image " + position + " has measuredWidth=" + observedView.getMeasuredWidth() + " measuredHeight=" + observedView.getMeasuredHeight()+ " width="+observedView.getWidth()+" height="+observedView.getHeight());
-                    }
-                });
-                viewTreeObserver.addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
-                    public boolean onPreDraw() {
-                        Log.d(TAG, "PREDRAW Target image " + position + " has measuredWidth=" + observedView.getMeasuredWidth() + " measuredHeight=" + observedView.getMeasuredHeight()+ " width="+observedView.getWidth()+" height="+observedView.getHeight());
-                        return true;
-                    }
-                });
-            }
-
             return view;
 		}
 		

@@ -1,6 +1,7 @@
 package com.radiusnetworks.scavengerhunt;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.webkit.WebView;
@@ -25,4 +26,5 @@ public class HelpActivity extends Activity {
         //webView.setFocusable(false);
         webView.loadUrl("http://developer.radiusnetworks.com/scavenger_hunt/help.html");
     }
+
 }

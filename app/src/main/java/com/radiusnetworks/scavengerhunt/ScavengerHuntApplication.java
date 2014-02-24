@@ -52,7 +52,7 @@ import java.util.Map;
  * 2. Downloads all the scavenger hunt badges ("target images") needed for both the found and
  *    not found states of each target.
  * 3. Updates the LoadingActivity with the status of the above download state.
- * 4. Once loading completes, launches the MainActivity which allows the user to start the hunt.
+ * 4. Once loading completes, launches the FinishedActivity which allows the user to start the hunt.
  * 5. Handles all ranging and monitoring callbacks for iBeacons.  When an iBeacon is ranged,
  *    this class checks to see if it matches a scavenger hunt target and awards a badge if it is
  *    close enough.  If an iBeacon comes into view, it sends a notification that a target is nearby.
@@ -127,6 +127,7 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         Intent i = new Intent(activity, LoadingActivity.class);
         i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(i);
+        this.collectionActivity.finish();  // do this so it won't show up again on back press
     }
 
     public void setLoadingActivity(LoadingActivity activity) {
@@ -189,9 +190,9 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
                 if (collectionActivity != null) {
                     collectionActivity.showItemFound();
                     if (hunt.everythingFound()) {
-                        // switch to MainActivity to show player he/she has won
+                        // switch to FinishedActivity to show player he/she has won
                         Log.d(TAG, "game is won");
-                        Intent i = new Intent(collectionActivity, MainActivity.class);
+                        Intent i = new Intent(collectionActivity, FinishedActivity.class);
                         i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                         startActivity(i);
                     }
@@ -237,10 +238,6 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         // Called when ProximityKit data are updated from the server
         Log.d(TAG, "proximityKit didSync.  kit is " + manager.getKit());
 
-        if (loadingActivity != null && loadingActivity.isValidatingCode()) {
-            loadingActivity.codeValidationPassed();
-        }
-
         // TODO: this should not be necessary
         manager.getIBeaconManager().setDataNotifier(this);
 
@@ -260,6 +257,18 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
                 urlMap.put("target" + huntId, variantTargetImageUrlForBaseUrlString(imageUrl, false));
             }
         }
+
+        if (targets.size() != 0) {
+            if (loadingActivity != null && loadingActivity.isValidatingCode()) {
+                loadingActivity.codeValidationPassed();
+            }
+        }
+        else {
+            if (loadingActivity != null && loadingActivity.isValidatingCode()) {
+                loadingActivity.codeValidationFailed(new RuntimeException("No targets configured for the entered code"));
+            }
+        }
+
 
         // The line below will load the saved state of the hunt from the phone's preferences
         hunt = Hunt.loadFromPreferences(this);
@@ -326,8 +335,9 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
             // Yes, we have everything we need to start up.  Let's start the Collection Activity
             this.hunt.start();
             Intent i = new Intent(this, TargetCollectionActivity.class);
-            i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP |Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(i);
+            this.loadingActivity.finish(); // do this so that if we hit back, the loading activity won't show up again
             return;
         } else {
             dependencyLoadingFailed("Network error", "Can't download images.  Please verify your network connection and try again.");
@@ -389,7 +399,6 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
 
 
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-        stackBuilder.addNextIntent(new Intent(this, MainActivity.class));
         stackBuilder.addNextIntent(new Intent(this, TargetCollectionActivity.class));
         PendingIntent resultPendingIntent =
                 stackBuilder.getPendingIntent(

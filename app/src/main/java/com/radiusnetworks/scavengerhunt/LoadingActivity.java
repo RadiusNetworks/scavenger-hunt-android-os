@@ -61,6 +61,7 @@ public class LoadingActivity extends Activity {
             Intent i = new Intent(this, TargetCollectionActivity.class);
             i.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(i);
+            finish();
             return;
         }
         else {
@@ -189,6 +190,7 @@ public class LoadingActivity extends Activity {
             }
         });
     }
+
     public void codeValidationFailed(final Exception e) {
         this.validatingCode = false;
         runOnUiThread(new Runnable() {
@@ -239,10 +241,21 @@ public class LoadingActivity extends Activity {
 
         try {
             WifiManager wifi = (WifiManager)getSystemService(Context.WIFI_SERVICE);
-            if (wifi.isWifiEnabled() && Build.MODEL.equals("Nexus 4") || Build.MODEL.equals("Nexus 7")){
+            String message = null;
+
+            if (wifi.isWifiEnabled()) {
+                if (Build.MODEL.equals("Nexus 4") || Build.MODEL.equals("Nexus 7")) {
+                    message = "There is a known issue with the Nexus 4 and Nexus 7 devices where WiFi and Bluetooth can disrupt each other.  We recommend disabling WiFi while using the Scavenger Hunt.";
+                }
+                if (Build.MODEL.equals("Moto G") || Build.MODEL.equals("Moto X")) {
+                    message = "There is a known issue with the Moto G and Moto X devices where WiFi and Bluetooth can disrupt each other.  We recommend disabling WiFi while using the Scavenger Hunt.";
+                }
+            }
+
+            if (message != null) {
                 final AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setTitle("Please Note");
-                builder.setMessage("There is a known issue with the Nexus 4 and Nexus 7 devices where WiFi and Bluetooth can disrupt each other.  We recommend disabling WiFi while using the Scavenger Hunt.");
+                builder.setMessage(message);
                 builder.setPositiveButton(android.R.string.ok, null);
                 builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
 
