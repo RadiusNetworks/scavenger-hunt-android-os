@@ -18,6 +18,7 @@ import com.radiusnetworks.ibeacon.IBeaconManager;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.app.Activity;
 import android.content.Context;
@@ -29,11 +30,13 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.GridView;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -43,12 +46,10 @@ import android.widget.Toast;
  */
 public class TargetCollectionActivity extends Activity  {
 	public static final String TAG = "TargetCollectionActivity";
-	public static final String NOT_FOUND_SUFFIX = "_grey";
-	
+
 	private GridView gridView = null;
 	private BaseAdapter adapter = null;
 	private IBeaconManager iBeaconService = IBeaconManager.getInstanceForApplication(this);
-	private String screenSizeSuffix = ""; // blank for phones, "_tablet" for big screens
     private ScavengerHuntApplication application;
 
 	@Override
@@ -57,16 +58,17 @@ public class TargetCollectionActivity extends Activity  {
 		Log.i(TAG, "onCreate");
         application = (ScavengerHuntApplication) this.getApplication();
 
-		setContentView(R.layout.sh_activity_target_collection);		
+		setContentView(R.layout.sh_activity_target_collection);
 		gridView = (GridView) findViewById(R.id.sh_grid_view);
+
+        Log.d(TAG, "getting image");
+        ImageView view = application.getRemoteAssetCache().getImageByName("target1");
+
 		adapter = new TargetImageCollectionAdapter(this);
 		gridView.setAdapter(adapter);
 		
 		gridView.setOnItemClickListener(itemClickListener);
 
-		if (getScreenWidthInDps() >= 600) {
-			screenSizeSuffix = "_tablet";
-		}
         application.setCollectionActivity(this);
         application.getHunt().sortTargetList();
 
@@ -126,7 +128,9 @@ public class TargetCollectionActivity extends Activity  {
       			Log.i(TAG, "force refresh");
       			adapter.notifyDataSetChanged();
       			gridView.invalidateViews();
-      			Toast toast = Toast.makeText(TargetCollectionActivity.this, "You've received badge "+application.getHunt().getFoundCount()+" of "+application.getHunt().getTargetList().size(), Toast.LENGTH_SHORT);
+      			Toast toast = Toast.makeText(TargetCollectionActivity.this, "You've received badge "+
+                        application.getHunt().getFoundCount()+" of "+
+                        application.getHunt().getTargetList().size(), Toast.LENGTH_SHORT);
       			toast.show();      	    	 
       	     }
     	});
@@ -146,10 +150,9 @@ public class TargetCollectionActivity extends Activity  {
 			return application.getHunt().getTargetList().size();
 		}
 
-
 		@Override
 		public Object getItem(int position) {
-			return null;
+            return application.getHunt().getTargetList().get(position);
 		}
 
 		@Override
@@ -159,8 +162,11 @@ public class TargetCollectionActivity extends Activity  {
 
 		@Override
 		public View getView(final int position, View convertView, ViewGroup parent) {
+            if (convertView != null) {
+                Log.d(TAG, "convertview height is "+convertView.getHeight());
+            }
 			TargetItem target = application.getHunt().getTargetList().get(position);
-            View view;
+            ImageView view;
 
 			if (!target.isFound()) {
                 view = application.getRemoteAssetCache().getImageByName("target"+target.getId());
@@ -173,11 +179,4 @@ public class TargetCollectionActivity extends Activity  {
 		
 	}
 
-	private int getScreenWidthInDps() {
-        DisplayMetrics metrics = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(metrics);
-        float dp_w = ( metrics.widthPixels * 160 ) / metrics.xdpi;        
-        return (int) dp_w;		
-	}
-	
 }

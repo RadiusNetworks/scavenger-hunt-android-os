@@ -112,7 +112,8 @@ public class LoadingActivity extends Activity {
         attributionView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://developer.radiusnetworks.com/scavenger_hunt"));
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW,
+                        Uri.parse("http://developer.radiusnetworks.com/scavenger_hunt"));
                 startActivity(browserIntent);
             }
         });

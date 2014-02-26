@@ -1,0 +1,220 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mainLayout"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="#3abeee"
+    android:gravity="center"
+    tools:context=".LoadingActivity"
+    android:focusable="true">
+
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/imageView"
+        android:src="@drawable/bolt"
+        android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Beacon"
+        android:textStyle="bold"
+        android:textColor="#FFFFFF"
+        android:id="@+id/title1"
+        android:textSize="68dp"
+        android:layout_below="@+id/imageView"
+        android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textStyle="bold"
+        android:text="Scavenger Hunt"
+        android:textColor="#FFFFFF"
+        android:id="@+id/title2"
+        android:layout_below="@+id/title1"
+        android:layout_marginTop="-10dp"
+        android:textSize="68dp"
+        android:layout_centerHorizontal="true" />
+
+    <RelativeLayout
+        android:id="@+id/attributionContainer"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_below="@+id/title2"
+        android:layout_centerHorizontal="true"
+        android:layout_centerInParent="true">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textColor="#CCCCFF"
+            android:text="Powered by "
+            android:textSize="36dp"
+            android:id="@+id/powered_by" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textColor="#ffffff"
+            android:text="@string/rn_underline"
+            android:textSize="36dp"
+            android:id="@+id/attribution"
+            android:layout_toRightOf="@+id/powered_by" />
+
+    </RelativeLayout>
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textColor="#ffffff"
+        android:text="HOW IT WORKS: Find the location for each of the scavenger hunt’s badges.  When you are within 10 meters of a location, you will see a notification and receive a colored badge."
+        android:textSize="28dp"
+        android:id="@+id/instructions"
+        android:paddingTop="40dp"
+        android:paddingLeft="40dp"
+        android:paddingRight="40dp"
+        android:paddingBottom="40dp"
+        android:layout_below="@+id/attributionContainer" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Start"
+        android:id="@+id/sh_start_button"
+        android:width="200dp"
+        android:textSize="40dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:background="#ffffff"
+        android:textColor="#000000"
+        android:layout_below="@+id/instructions"
+        android:layout_centerHorizontal="true" />
+
+
+    <!-- dialog -->
+    <RelativeLayout
+        android:id="@+id/code_dialog"
+        android:layout_width="350dp"
+        android:layout_height="350dp"
+        android:gravity="center"
+        android:background="@drawable/sh_dialog_background"
+        android:alpha="0.8"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:paddingBottom="50dp"
+        android:paddingTop="50dp"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true">
+
+
+        <RelativeLayout
+            android:id="@+id/buttonWithInput"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:layout_alignParentTop="true"
+            android:layout_centerInParent="true">
+
+
+            <EditText
+                android:layout_width="160dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/code"
+                android:layout_centerInParent="true"
+
+
+                android:inputType="number" />
+
+            <Button
+                android:id="@+id/ok_button"
+                style="@style/sh_custom_button"
+                android:layout_width="100dp"
+                android:layout_marginLeft="5dp"
+                android:layout_height="wrap_content"
+                android:onClick="onCodeOkClicked"
+                android:text="OK"
+                android:textColor="#000000"
+                android:layout_toRightOf="@+id/code"
+                android:layout_centerInParent="true" />
+
+        </RelativeLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Help"
+            android:id="@+id/help"
+            android:layout_below="@+id/buttonWithInput"
+            android:layout_centerHorizontal="true"
+            android:textColor="#ffffff" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Enter the 8 digit code provided by the scavenger hunt organizer. Tap help to learn how to organize a scavenger hunt or to get a sample code."
+            android:id="@+id/enterCode"
+            android:layout_below="@+id/help"
+            android:layout_centerHorizontal="true"
+            android:textColor="#FFFFFF"
+            android:layout_marginTop="38dp" />
+
+    </RelativeLayout>
+
+    <!-- dialog -->
+    <RelativeLayout
+        android:id="@+id/validating_dialog"
+        android:layout_width="350dp"
+        android:layout_height="350dp"
+        android:gravity="center"
+        android:background="@drawable/sh_dialog_background"
+        android:alpha="0.8"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:paddingBottom="50dp"
+        android:paddingTop="50dp"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true">
+
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Validating Code"
+            android:textSize="30dp"
+            android:id="@+id/loading_message"
+            android:paddingBottom="20dp"
+            android:layout_centerHorizontal="true"
+            android:textColor="#ffffff" />
+
+        <ProgressBar
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/progressBar"
+            android:layout_below="@+id/loading_message"
+            android:layout_centerHorizontal="true" />
+
+
+    </RelativeLayout>
+
+
+
+</RelativeLayout>

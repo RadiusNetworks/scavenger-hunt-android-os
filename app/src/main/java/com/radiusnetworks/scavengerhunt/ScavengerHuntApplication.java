@@ -52,11 +52,21 @@ import java.util.Map;
  * 2. Downloads all the scavenger hunt badges ("target images") needed for both the found and
  *    not found states of each target.
  * 3. Updates the LoadingActivity with the status of the above download state.
- * 4. Once loading completes, launches the FinishedActivity which allows the user to start the hunt.
+ * 4. Once loading completes, launches the TargetCollectionActivity which is the main screen for the
+ *    hunt.
  * 5. Handles all ranging and monitoring callbacks for iBeacons.  When an iBeacon is ranged,
  *    this class checks to see if it matches a scavenger hunt target and awards a badge if it is
  *    close enough.  If an iBeacon comes into view, it sends a notification that a target is nearby.
  */
+
+
+/*
+TODO:
+
+1. Test on tablet
+2. Test with PK code
+ */
+
 public class ScavengerHuntApplication extends Application implements ProximityKitNotifier {
 
     private static final String TAG = "ScavengerHuntApplication";
@@ -75,7 +85,6 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
     private boolean codeNeeded;
     int startCount = 0;
 
-
     @Override
     public void onCreate() {
         super.onCreate();
@@ -85,7 +94,6 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         manager.getIBeaconManager().LOG_DEBUG = true;
         manager.setNotifier(this);
 
-        // TODO: remove this code, it is for the appstore version only
         if (!new PropertiesFile().exists()) {
             this.codeNeeded = true;
             return;
@@ -238,9 +246,6 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         // Called when ProximityKit data are updated from the server
         Log.d(TAG, "proximityKit didSync.  kit is " + manager.getKit());
 
-        // TODO: this should not be necessary
-        manager.getIBeaconManager().setDataNotifier(this);
-
         ArrayList<TargetItem> targets = new ArrayList<TargetItem>();
         Map<String, String> urlMap = new HashMap<String, String>();
 
@@ -269,8 +274,8 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
             }
         }
 
-
-        // The line below will load the saved state of the hunt from the phone's preferences
+        // load the saved state of the hunt from the phone's persistent
+        // storage
         hunt = Hunt.loadFromPreferences(this);
         boolean targetListChanged = hunt.getTargetList().size() != targets.size();
         for (TargetItem target : hunt.getTargetList() ) {
@@ -345,20 +350,6 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         }
     }
 
-    // Checks to see that one found and one not found image has been downloaded for each target
-    private boolean validateRequiredImagesPresent() {
-        boolean missing = false;
-        for (TargetItem target : hunt.getTargetList()) {
-            if (remoteAssetCache.getImageByName("target" + target.getId()) == null) {
-                missing = true;
-            }
-            if (remoteAssetCache.getImageByName("target" + target.getId() + "_found") == null) {
-                missing = true;
-            }
-        }
-        return !missing;
-    }
-
     public Hunt getHunt() {
         return hunt;
     }
@@ -384,6 +375,20 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
 
     public RemoteAssetCache getRemoteAssetCache() {
         return remoteAssetCache;
+    }
+
+    // Checks to see that one found and one not found image has been downloaded for each target
+    private boolean validateRequiredImagesPresent() {
+        boolean missing = false;
+        for (TargetItem target : hunt.getTargetList()) {
+            if (remoteAssetCache.getImageByName("target" + target.getId()) == null) {
+                missing = true;
+            }
+            if (remoteAssetCache.getImageByName("target" + target.getId() + "_found") == null) {
+                missing = true;
+            }
+        }
+        return !missing;
     }
 
     /*
@@ -442,16 +447,24 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
             suffix = "";
         }
         float screenWidthPixels = getResources().getDisplayMetrics().widthPixels;
+        Log.d(TAG, "Screen width is "+screenWidthPixels+" and density is "+getResources().getDisplayMetrics().density);
 
-        if (screenWidthPixels > 260*2*1.2) {
-            suffix += "_260";
-        }
-        else if (screenWidthPixels > 312*2*1.2) {
-            suffix += "_312";
+        if (screenWidthPixels > 1040*2*1.2) {
+            suffix += "_1040";
         }
         else if (screenWidthPixels > 624*2*1.2) {
             suffix += "_624";
         }
+        else if (screenWidthPixels > 438*2*1.2) {
+            suffix += "_438";
+        }
+        else if (screenWidthPixels > 312*2*1.2) {
+            suffix += "_312";
+        }
+        else if (screenWidthPixels > 260*2*1.2) {
+            suffix += "_260";
+        }
+
 
         return prefix + suffix + extension;
     }
