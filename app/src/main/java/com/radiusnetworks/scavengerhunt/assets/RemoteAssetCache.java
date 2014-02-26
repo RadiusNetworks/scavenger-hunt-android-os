@@ -152,10 +152,20 @@ public class RemoteAssetCache {
      * @return
      */
     public ImageView getImageByName(String name) {
-        String fname = context.getFilesDir().getAbsolutePath()+"/"+name;
-        Bitmap bitmap = BitmapFactory.decodeFile(fname);
-        ImageView imageView = new ImageView(context);
-        imageView.setImageBitmap(bitmap);
+        ImageView imageView = null;
+        try {
+            String fname = context.getFilesDir().getAbsolutePath()+"/"+name;
+            Bitmap bitmap = BitmapFactory.decodeFile(fname);
+            if (bitmap == null) {
+                Log.d(TAG, "Can't load image named "+name+".  Bitmap is null.");
+                return null;
+            }
+            imageView = new ImageView(context);
+            imageView.setImageBitmap(bitmap);
+        }
+        catch (Exception e) {
+            Log.d(TAG, "Can't load image named "+name, e);
+        }
         return imageView;
     }
 

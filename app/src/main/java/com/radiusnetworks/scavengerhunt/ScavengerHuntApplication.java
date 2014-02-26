@@ -135,7 +135,9 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         Intent i = new Intent(activity, LoadingActivity.class);
         i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(i);
-        this.collectionActivity.finish();  // do this so it won't show up again on back press
+        if (this.collectionActivity != null) {
+            this.collectionActivity.finish();  // do this so it won't show up again on back press
+        }
     }
 
     public void setLoadingActivity(LoadingActivity activity) {
@@ -162,7 +164,7 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
     // actually get the loading activity to display an error message to the user
     private void showFailedErrorMessage() {
         Log.d(TAG, "showFailedErrorMesage");
-        loadingActivity.failAndTerminate(loadingFailedTitle, loadingFailedMessage);
+        loadingActivity.failAndTryAgain(loadingFailedTitle, loadingFailedMessage);
         loadingFailedTitle = null;
     }
 
@@ -379,6 +381,7 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
 
     // Checks to see that one found and one not found image has been downloaded for each target
     private boolean validateRequiredImagesPresent() {
+        Log.d(TAG, "Validating required images are present");
         boolean missing = false;
         for (TargetItem target : hunt.getTargetList()) {
             if (remoteAssetCache.getImageByName("target" + target.getId()) == null) {

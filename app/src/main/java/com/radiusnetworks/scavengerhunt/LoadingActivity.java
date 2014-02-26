@@ -64,12 +64,14 @@ public class LoadingActivity extends Activity {
             finish();
             return;
         }
-        else {
-            // starting from scratch
-            setContentView(R.layout.sh_activity_code);
-            this.findViewById(R.id.code_dialog).setVisibility(View.INVISIBLE);
-            this.findViewById(R.id.validating_dialog).setVisibility(View.INVISIBLE);
-        }
+        setupCodeView();
+        checkPrerequisites();
+    }
+
+    private void setupCodeView() {
+        setContentView(R.layout.sh_activity_code);
+        this.findViewById(R.id.code_dialog).setVisibility(View.INVISIBLE);
+        this.findViewById(R.id.validating_dialog).setVisibility(View.INVISIBLE);
 
         View startButton = (TextView) this.findViewById(R.id.sh_start_button);
         if (startButton != null) {
@@ -89,7 +91,7 @@ public class LoadingActivity extends Activity {
                                 Log.d(TAG, "help tapped");
                                 Intent i = new Intent(getApplicationContext(), HelpActivity.class);
                                 startActivity(i);
-                           }
+                            }
                         });
 
                     }
@@ -117,9 +119,6 @@ public class LoadingActivity extends Activity {
                 startActivity(browserIntent);
             }
         });
-
-        checkPrerequisites();
-
     }
 
     @Override
@@ -149,23 +148,16 @@ public class LoadingActivity extends Activity {
         super.onDestroy();
     }
 
-    public void failAndTerminate(final String title, final String message) {
+    public void failAndTryAgain(final String title, final String message) {
+        this.validatingCode = false;
         runOnUiThread(new Runnable() {
             public void run() {
+                setupCodeView();
                 final AlertDialog.Builder builder = new AlertDialog.Builder(LoadingActivity.this);
                 builder.setTitle(title);
                 builder.setMessage(message);
                 builder.setPositiveButton(android.R.string.ok, null);
-                builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
-
-                    @Override
-                    public void onDismiss(DialogInterface dialog) {
-                        LoadingActivity.this.finish();
-                    }
-
-                });
                 builder.show();
-
             }
         });
     }
@@ -248,7 +240,11 @@ public class LoadingActivity extends Activity {
                 if (Build.MODEL.equals("Nexus 4") || Build.MODEL.equals("Nexus 7")) {
                     message = "There is a known issue with the Nexus 4 and Nexus 7 devices where WiFi and Bluetooth can disrupt each other.  We recommend disabling WiFi while using the Scavenger Hunt.";
                 }
-                if (Build.MODEL.equals("Moto G") || Build.MODEL.equals("Moto X")) {
+                // Motorola Moto G (XT1028, XT1031, XT1032, XT1033, XT1034)
+                // Motorola Moto X (XT1049, XT105x, XT1060)
+                else if (Build.MODEL.startsWith("XT102") || Build.MODEL.startsWith("XT103") ||
+                         Build.MODEL.startsWith("XT104") || Build.MODEL.startsWith("XT105") ||
+                         Build.MODEL.startsWith("XT106")) {
                     message = "There is a known issue with the Moto G and Moto X devices where WiFi and Bluetooth can disrupt each other.  We recommend disabling WiFi while using the Scavenger Hunt.";
                 }
             }
