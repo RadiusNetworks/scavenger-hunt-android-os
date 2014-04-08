@@ -35,7 +35,7 @@ public class RemoteAssetCache {
     private int assetsToDownload = 0;
     private int failureCount = 0;
     private Context context;
-    private static final Pattern DENSITY_PATTERN = Pattern.compile("^(.*_)([hxl]+)(dpi\\..*)");
+    private static final Pattern SIZE_PATTERN = Pattern.compile("^(.*)(_[0-9]+)(\\..*)");
     private AssetFetcherCallback callback;
     private Exception lastException;
     private Integer lastResponseCode;
@@ -48,8 +48,8 @@ public class RemoteAssetCache {
      * Downloads a set of images from a web server, based on a passed map keyed off of
      * the desired local filename that points to the remote URL as a string.
      *
-     * If the URLString has a screen density modifier on it (e.g. _hdpi), and that image
-     * cannot be downloaded, this class will retry downloading it from the _mdpi variant.
+     * If the URLString has an image width modifier on it (e.g. _312), and that image
+     * cannot be downloaded, this class will retry downloading it from the default url.
      * When complete, all files that were successfully downloaded are stored on the Android
      * file system in the home directory of the application under the filenames in the keys
      * to the assetUrls Map.  If all were downloaded successfully, the requestComplete callback
@@ -91,16 +91,16 @@ public class RemoteAssetCache {
                     RemoteAssetCache.this.lastException = e;
                     RemoteAssetCache.this.lastResponseCode = responseCode;
 
-                    // If this was a specfic dpi url, fallback to the mdpi url
-                    Matcher matcher = DENSITY_PATTERN.matcher(assetUrl);
+                    // If this was a specfic size url, fallback to the base url
+                    Matcher matcher = SIZE_PATTERN.matcher(assetUrl);
                     // only try to get the mdpi version if this wasn't the mdpi version
-                    if (matcher.matches() && matcher.group(2) != null && !matcher.group(2).equals("m")) {
-                        final String mdpiUrl = matcher.group(1) + "m" + matcher.group(3);
-                        AssetFetcher assetFetcher = new AssetFetcher(context, mdpiUrl, filenameToSave, new AssetFetcherCallback() {
+                    if (matcher.matches() && matcher.group(2) != null ) {
+                        final String standardImageUrl = matcher.group(1)  + matcher.group(3);
+                        AssetFetcher assetFetcher = new AssetFetcher(context, standardImageUrl, filenameToSave, new AssetFetcherCallback() {
 
                             @Override
                             public void requestComplete() {
-                                Log.d(TAG, "Successfully downloaded "+mdpiUrl);
+                                Log.d(TAG, "Successfully downloaded "+standardImageUrl);
                                 assetsToDownload--;
                                 if (assetsToDownload == 0) {
                                     if (failureCount == 0) {
@@ -115,7 +115,7 @@ public class RemoteAssetCache {
 
                             @Override
                             public void requestFailed(Integer responseCode, Exception e) {
-                                Log.w(TAG, "Failed to load "+ mdpiUrl);
+                                Log.w(TAG, "Failed to load "+ standardImageUrl);
                                 RemoteAssetCache.this.lastException = e;
                                 RemoteAssetCache.this.lastResponseCode = responseCode;
                                 assetsToDownload--;

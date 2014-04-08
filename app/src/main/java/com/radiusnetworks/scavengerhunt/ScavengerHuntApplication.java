@@ -223,11 +223,13 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
     public void didEnterRegion(Region region) {
         // Called when one of the iBeacons defined in ProximityKit first appears
         Log.d(TAG, "didEnterRegion");
-        if (hunt.getElapsedTime() == 0) {
-            Log.d(TAG, "Not sending notification because the hunt has not been started yet.  Elapsed time is " + hunt.getElapsedTime());
-        } else {
-            Log.d(TAG, "Sending notification.");
-            sendNotification();
+        if (hunt != null) {
+            if (hunt.getElapsedTime() == 0) {
+                Log.d(TAG, "Not sending notification because the hunt has not been started yet.  Elapsed time is " + hunt.getElapsedTime());
+            } else {
+                Log.d(TAG, "Sending notification.");
+                sendNotification();
+            }
         }
     }
 
@@ -259,9 +261,13 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
                 String imageUrl = iBeacon.getAttributes().get("image_url");
                 if (imageUrl == null) {
                     Log.e(TAG, "ERROR: No image_url specified in ProximityKit for item with hunt_id=" + huntId);
+                    loadingActivity.codeValidationFailed(new RuntimeException("No targets configured for the entered code.  At least one beacon must be configured in ProximityKit with a hunt_id key."));
+                    return;
                 }
-                urlMap.put("target" + huntId + "_found", variantTargetImageUrlForBaseUrlString(imageUrl, true));
-                urlMap.put("target" + huntId, variantTargetImageUrlForBaseUrlString(imageUrl, false));
+                else {
+                    urlMap.put("target" + huntId + "_found", variantTargetImageUrlForBaseUrlString(imageUrl, true));
+                    urlMap.put("target" + huntId, variantTargetImageUrlForBaseUrlString(imageUrl, false));
+                }
             }
         }
 
@@ -272,7 +278,8 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         }
         else {
             if (loadingActivity != null && loadingActivity.isValidatingCode()) {
-                loadingActivity.codeValidationFailed(new RuntimeException("No targets configured for the entered code"));
+                loadingActivity.codeValidationFailed(new RuntimeException("No targets configured for the entered code.  At least one beacon must be configured in ProximityKit with a hunt_id key."));
+                return;
             }
         }
 

@@ -197,8 +197,8 @@ public class LoadingActivity extends Activity {
                     builder.setMessage("Please check that your scavenger hunt code is valid and try again.");
                 }
                 else {
-                    builder.setTitle("Network error");
-                    builder.setMessage("Please check your internet connection and try again.");
+                    builder.setTitle("Error accessing hunt configuration");
+                    builder.setMessage("Please check your internet connection and try again.  If the problem persists, please contact the hunt sponsor.  Details: "+e.getMessage());
                     Log.d(TAG, "code validation error: "+e);
                 }
                 builder.setPositiveButton(android.R.string.ok, null);
