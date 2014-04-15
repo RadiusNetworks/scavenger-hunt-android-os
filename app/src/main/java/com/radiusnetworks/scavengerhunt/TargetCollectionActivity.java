@@ -13,32 +13,25 @@
  */
 package com.radiusnetworks.scavengerhunt;
 
-import com.radiusnetworks.ibeacon.IBeaconManager;
-
-import android.app.AlertDialog;
-import android.content.DialogInterface;
-import android.content.SharedPreferences;
-import android.graphics.Color;
-import android.os.Bundle;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import android.preference.PreferenceManager;
-import android.util.DisplayMetrics;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
-import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
-import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.radiusnetworks.ibeacon.IBeaconManager;
 
 /**
  * Activity displays all the badge icons in the scavenger hunt and allows the
@@ -162,19 +155,23 @@ public class TargetCollectionActivity extends Activity  {
 
 		@Override
 		public View getView(final int position, View convertView, ViewGroup parent) {
+
             if (convertView != null) {
                 Log.d(TAG, "convertview height is "+convertView.getHeight());
             }
 			TargetItem target = application.getHunt().getTargetList().get(position);
+
             ImageView view;
 
 			if (!target.isFound()) {
-                view = application.getRemoteAssetCache().getImageByName("target"+target.getId());
+                view = application.getRemoteAssetCache().getImageByName("target"+target.getId(), gridView.getColumnWidth());
 			} 
 			else {
-                view =application.getRemoteAssetCache().getImageByName("target"+target.getId()+"_found");
+                view =application.getRemoteAssetCache().getImageByName("target"+target.getId()+"_found", gridView.getColumnWidth());
 			}
             return view;
+
+
 		}
 		
 	}

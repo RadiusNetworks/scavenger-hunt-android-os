@@ -9,95 +9,103 @@
     android:focusable="true">
 
 
-    <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/imageView"
-        android:src="@drawable/bolt"
-        android:layout_centerHorizontal="true" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Beacon"
-        android:textStyle="bold"
-        android:textColor="#FFFFFF"
-        android:id="@+id/title1"
-        android:textSize="34dp"
-        android:layout_below="@+id/imageView"
-        android:layout_centerHorizontal="true" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:textStyle="bold"
-        android:text="Scavenger Hunt"
-        android:textColor="#FFFFFF"
-        android:id="@+id/title2"
-        android:layout_below="@+id/title1"
-        android:layout_marginTop="-10dp"
-        android:textSize="34dp"
-        android:layout_centerHorizontal="true" />
 
     <RelativeLayout
-        android:id="@+id/attributionContainer"
-        android:layout_width="fill_parent"
+        android:id="@+id/textLayout"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:layout_below="@+id/title2"
-        android:layout_centerHorizontal="true"
-        android:layout_centerInParent="true">
+        android:layout_centerHorizontal="true">
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/imageView"
+            android:src="@drawable/bolt"
+            android:layout_centerHorizontal="true"
+            android:adjustViewBounds="true"
+            android:scaleType="centerInside" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Beacon"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:id="@+id/title1"
+            android:textSize="34dp"
+            android:layout_below="@+id/imageView"
+            android:layout_centerHorizontal="true" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textColor="#CCCCFF"
-            android:text="Powered by "
-            android:textSize="18dp"
-            android:id="@+id/powered_by" />
+            android:textStyle="bold"
+            android:text="Scavenger Hunt"
+            android:textColor="#FFFFFF"
+            android:id="@+id/title2"
+            android:layout_below="@+id/title1"
+            android:layout_marginTop="-10dp"
+            android:textSize="34dp"
+            android:layout_centerHorizontal="true" />
+
+        <RelativeLayout
+            android:id="@+id/attributionContainer"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:layout_below="@+id/title2"
+            android:layout_centerHorizontal="true"
+            android:layout_centerInParent="true">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textColor="#CCCCFF"
+                android:text="Powered by "
+                android:textSize="18dp"
+                android:id="@+id/powered_by" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textColor="#ffffff"
+                android:text="@string/rn_underline"
+                android:textSize="18dp"
+                android:id="@+id/attribution"
+                android:layout_toRightOf="@+id/powered_by" />
+
+        </RelativeLayout>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Start"
+            android:id="@+id/sh_start_button"
+            android:width="100dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:background="#ffffff"
+            android:textColor="#000000"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@+id/instructions" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:textColor="#ffffff"
-            android:text="@string/rn_underline"
-            android:textSize="18dp"
-            android:id="@+id/attribution"
-            android:layout_toRightOf="@+id/powered_by" />
-
+            android:text="HOW IT WORKS: Find the location for each of the scavenger hunt’s badges.  When you are within 10 meters of a location, you will see a notification and receive a colored badge."
+            android:textSize="14dp"
+            android:id="@+id/instructions"
+            android:paddingTop="20dp"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
+            android:paddingBottom="20dp"
+            android:layout_below="@+id/attributionContainer" />
     </RelativeLayout>
-
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:textColor="#ffffff"
-        android:text="HOW IT WORKS: Find the location for each of the scavenger hunt’s badges.  When you are within 10 meters of a location, you will see a notification and receive a colored badge."
-        android:textSize="14dp"
-        android:id="@+id/instructions"
-        android:paddingTop="20dp"
-        android:paddingLeft="20dp"
-        android:paddingRight="20dp"
-        android:paddingBottom="20dp"
-        android:layout_below="@+id/attributionContainer" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Start"
-        android:id="@+id/sh_start_button"
-        android:width="100dp"
-        android:paddingTop="10dp"
-        android:paddingBottom="10dp"
-        android:background="#ffffff"
-        android:textColor="#000000"
-        android:layout_below="@+id/instructions"
-        android:layout_centerHorizontal="true" />
 
 
     <!-- dialog -->

@@ -21,6 +21,7 @@ import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.DropBoxManager;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
@@ -29,8 +30,8 @@ import com.radiusnetworks.ibeacon.IBeacon;
 import com.radiusnetworks.ibeacon.IBeaconData;
 import com.radiusnetworks.ibeacon.Region;
 import com.radiusnetworks.ibeacon.client.DataProviderException;
-import com.radiusnetworks.proximity.ProximityKitNotifier;
 import com.radiusnetworks.proximity.ProximityKitManager;
+import com.radiusnetworks.proximity.ProximityKitNotifier;
 import com.radiusnetworks.proximity.ibeacon.powersave.BackgroundPowerSaver;
 import com.radiusnetworks.proximity.licensing.PropertiesFile;
 import com.radiusnetworks.proximity.model.KitIBeacon;
@@ -39,7 +40,10 @@ import com.radiusnetworks.scavengerhunt.assets.RemoteAssetCache;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by dyoung on 1/24/14.
@@ -308,8 +312,10 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         // later, and have users get the update if they restart the app.  This takes time, so if you
         // don't want to do this, then only execute this code if validateRequiredImagesPresent()
         // returns false.
+        Map <String,String> urlMapWithoutDuplicates = returnMapWithoutDuplicates(urlMap);
+
         remoteAssetCache = new RemoteAssetCache(this);
-        remoteAssetCache.downloadAssets(urlMap, new AssetFetcherCallback() {
+        remoteAssetCache.downloadAssets(urlMapWithoutDuplicates, new AssetFetcherCallback() {
             @Override
             public void requestComplete() {
                 dependencyLoadFinished();
@@ -320,6 +326,21 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
                 dependencyLoadFinished();
             }
         });
+    }
+
+    private static Map<String,String> returnMapWithoutDuplicates( Map<String, String> map) {
+        Map<String,String> mapWithoutDuplicates = new HashMap<String, String>();
+        mapWithoutDuplicates.putAll(map);
+
+        Iterator<Map.Entry<String, String>> iter = mapWithoutDuplicates.entrySet().iterator();
+         HashSet<String> valueSet = new HashSet<String>();
+        while (iter.hasNext()) {
+             Map.Entry<String, String> next = iter.next();
+            if (!valueSet.add(next.getValue())) {
+                iter.remove();
+            }
+        }
+        return mapWithoutDuplicates;
     }
 
     @Override

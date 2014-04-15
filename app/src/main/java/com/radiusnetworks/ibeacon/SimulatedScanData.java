@@ -18,12 +18,18 @@ public class SimulatedScanData {
         iBeacons = new ArrayList<IBeacon>();
 
         if (USE_SIMULATED_IBEACONS) {
-            IBeacon iBeacon1 = new IBeacon("2F234454-CF6D-4A0F-ADF2-F4911BA9FFA6".toLowerCase(),
+            IBeacon iBeacon1 = new IBeacon("DF7E1C79-43E9-44FF-886F-1D1F7DA6997A".toLowerCase(),
                     1, 1, -55, -55);
-            IBeacon iBeacon2 = new IBeacon("2F234454-CF6D-4A0F-ADF2-F4911BA9FFA6".toLowerCase(),
-                    1, 2, -55, -55);
+          //  IBeacon iBeacon2 = new IBeacon("DF7E1C79-43E9-44FF-886F-1D1F7DA6997B".toLowerCase(),
+           //         1, 2, -55, -55);
+            IBeacon iBeacon3 = new IBeacon("DF7E1C79-43E9-44FF-886F-1D1F7DA6997C".toLowerCase(),
+                    1, 3, -55, -55);
+            IBeacon iBeacon4 = new IBeacon("DF7E1C79-43E9-44FF-886F-1D1F7DA6997D".toLowerCase(),
+                    1, 4, -55, -55);
             iBeacons.add(iBeacon1);
-            iBeacons.add(iBeacon2);
+           // iBeacons.add(iBeacon2);
+            iBeacons.add(iBeacon3);
+            iBeacons.add(iBeacon4);
         }
     }
 }
