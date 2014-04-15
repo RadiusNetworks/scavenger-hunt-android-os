@@ -312,10 +312,8 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         // later, and have users get the update if they restart the app.  This takes time, so if you
         // don't want to do this, then only execute this code if validateRequiredImagesPresent()
         // returns false.
-        Map <String,String> urlMapWithoutDuplicates = returnMapWithoutDuplicates(urlMap);
-
         remoteAssetCache = new RemoteAssetCache(this);
-        remoteAssetCache.downloadAssets(urlMapWithoutDuplicates, new AssetFetcherCallback() {
+        remoteAssetCache.downloadAssets(urlMap, new AssetFetcherCallback() {
             @Override
             public void requestComplete() {
                 dependencyLoadFinished();
@@ -326,21 +324,6 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
                 dependencyLoadFinished();
             }
         });
-    }
-
-    private static Map<String,String> returnMapWithoutDuplicates( Map<String, String> map) {
-        Map<String,String> mapWithoutDuplicates = new HashMap<String, String>();
-        mapWithoutDuplicates.putAll(map);
-
-        Iterator<Map.Entry<String, String>> iter = mapWithoutDuplicates.entrySet().iterator();
-         HashSet<String> valueSet = new HashSet<String>();
-        while (iter.hasNext()) {
-             Map.Entry<String, String> next = iter.next();
-            if (!valueSet.add(next.getValue())) {
-                iter.remove();
-            }
-        }
-        return mapWithoutDuplicates;
     }
 
     @Override
