@@ -162,13 +162,18 @@ public class TargetCollectionActivity extends Activity  {
 			TargetItem target = application.getHunt().getTargetList().get(position);
 
             ImageView view;
+            Double borderSize = 10.0;
 
 			if (!target.isFound()) {
-                view = application.getRemoteAssetCache().getImageByName("target"+target.getId(), (double) gridView.getColumnWidth());
+                view = application.getRemoteAssetCache().getImageByName("target"+target.getId(), (double) (gridView.getColumnWidth()-borderSize));
 			} 
 			else {
-                view =application.getRemoteAssetCache().getImageByName("target"+target.getId()+"_found", (double) gridView.getColumnWidth());
+                view =application.getRemoteAssetCache().getImageByName("target"+target.getId()+"_found", (double) (gridView.getColumnWidth()-borderSize));
 			}
+            // image layout adjustment
+            view.setMinimumHeight(gridView.getColumnWidth());
+            view.setMinimumWidth(gridView.getColumnWidth());
+
             return view;
 
 

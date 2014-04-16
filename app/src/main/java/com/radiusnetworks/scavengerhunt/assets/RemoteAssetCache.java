@@ -212,7 +212,7 @@ public class RemoteAssetCache {
             }
 
             //scale down at any amount, or scale up if it must be scaled up 200%
-            if (((scaleFactor > 0) && (scaleFactor < 1)) || (scaleFactor > 2)) {
+            if (((scaleFactor > 0) && (scaleFactor < 1)) || (scaleFactor > 1)) {
                 Log.d(TAG,"scaling image "+name+"bitmap to "+scaleFactor);
                 // Scaling image to fit tbe space within the gridview
                 Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, (int)targetWidth, (int)targetHeight, true);
