@@ -20,6 +20,7 @@ import android.util.Log;
 import android.widget.ImageView;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -198,18 +199,20 @@ public class RemoteAssetCache {
 
             Bitmap bitmap = BitmapFactory.decodeFile(fname);
             if (bitmap == null) {
-                Log.d(TAG, "Can't load image named "+name+".  Bitmap is null.");
+                Log.d(TAG, "Can't load image named "+name+".  Bitmap is null..");
                 return null;
             }
 
-            //only scale down, scaling up significantly degrades image quality and is most likely unnecessary
-            if ((scaleFactor > 0) && (scaleFactor < 1)) {
+            //scale down at any amount, or scale up if it must be scaled up 200%
+            if (((scaleFactor > 0) && (scaleFactor < 1)) || (scaleFactor > 2)) {
+                Log.d(TAG,"scaling image "+name+"bitmap to "+scaleFactor);
                 // Scaling image to fit tbe space within the gridview
                 Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, (int)targetWidth, (int)targetHeight, true);
                 imageView = new ImageView(context);
                 imageView.setImageBitmap(scaledBitmap);
+                saveScaledImageToFile(scaledBitmap, fname);
             } else {
-                Log.d(TAG,"Scaling not implemented, using original image.");
+                Log.d(TAG,"Scaling not implemented, using original image for "+name);
                 imageView = new ImageView(context);
                 imageView.setImageBitmap(bitmap);
             }
@@ -219,6 +222,24 @@ public class RemoteAssetCache {
         }
         return imageView;
     }
+
+
+   private void saveScaledImageToFile(Bitmap bmp, String fname){
+
+
+       FileOutputStream out = null;
+       try {
+           out = new FileOutputStream(fname);
+           bmp.compress(Bitmap.CompressFormat.PNG, 90, out);
+       } catch (Exception e) {
+           e.printStackTrace();
+       } finally {
+           try{
+               out.close();
+           } catch(Throwable ignore) {}
+       }
+
+   }
 
     /**
      * Deletes all cached files
