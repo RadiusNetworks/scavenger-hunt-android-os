@@ -176,7 +176,7 @@ public class RemoteAssetCache {
      * @param targetWidth   Width of the Gridview column this image will occupy
      * @return
      */
-    public ImageView getImageByName(String name, int targetWidth) {
+    public ImageView getImageByName(String name, double targetWidth) {
         ImageView imageView = null;
         try {
 
@@ -189,11 +189,19 @@ public class RemoteAssetCache {
 
             double imageW = (double) bmOptions.outWidth;
             double imageH = (double) bmOptions.outHeight;
+            double scaleFactor, targetHeight;
 
             // Determine how much to scale down the image
-            double scaleFactor = targetWidth/imageW;
-            double targetHeight = imageH * scaleFactor;
-
+            if (imageW > imageH){
+                //for wide images
+                scaleFactor = targetWidth/imageW;
+                targetHeight = imageH * scaleFactor;
+            } else {
+                //for tall images
+                scaleFactor = targetWidth/imageH;
+                targetHeight = imageH * scaleFactor;
+                targetWidth = imageW * scaleFactor;
+            }
             //Log.d(TAG, "scaleFactor = "+scaleFactor+", targetWidth = "+targetWidth+", targetHeight = "+targetHeight+ ", imageW = "+ imageW+", imageH = "+ imageH);
 
 
@@ -224,22 +232,22 @@ public class RemoteAssetCache {
     }
 
 
-   private void saveScaledImageToFile(Bitmap bmp, String fname){
+    private void saveScaledImageToFile(Bitmap bmp, String fname){
 
 
-       FileOutputStream out = null;
-       try {
-           out = new FileOutputStream(fname);
-           bmp.compress(Bitmap.CompressFormat.PNG, 90, out);
-       } catch (Exception e) {
-           e.printStackTrace();
-       } finally {
-           try{
-               out.close();
-           } catch(Throwable ignore) {}
-       }
+        FileOutputStream out = null;
+        try {
+            out = new FileOutputStream(fname);
+            bmp.compress(Bitmap.CompressFormat.PNG, 90, out);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try{
+                out.close();
+            } catch(Throwable ignore) {}
+        }
 
-   }
+    }
 
     /**
      * Deletes all cached files

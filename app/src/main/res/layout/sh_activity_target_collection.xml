@@ -6,7 +6,8 @@
     android:paddingLeft="0dp"
     android:paddingRight="0dp"
     android:paddingTop="0dp"
-    tools:context=".TargetCollectionActivity" >
+    tools:context=".TargetCollectionActivity"
+    android:gravity="center">
 
     <GridView
         android:id="@+id/sh_grid_view"
@@ -18,7 +19,9 @@
         android:numColumns="2"
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
-        android:stretchMode="columnWidth">
+        android:gravity="center"
+        android:paddingTop="1dp"
+        android:paddingBottom="1dp">
     </GridView>
 
     <Button

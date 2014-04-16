@@ -164,10 +164,10 @@ public class TargetCollectionActivity extends Activity  {
             ImageView view;
 
 			if (!target.isFound()) {
-                view = application.getRemoteAssetCache().getImageByName("target"+target.getId(), gridView.getColumnWidth());
+                view = application.getRemoteAssetCache().getImageByName("target"+target.getId(), (double) gridView.getColumnWidth());
 			} 
 			else {
-                view =application.getRemoteAssetCache().getImageByName("target"+target.getId()+"_found", gridView.getColumnWidth());
+                view =application.getRemoteAssetCache().getImageByName("target"+target.getId()+"_found", (double) gridView.getColumnWidth());
 			}
             return view;
 
