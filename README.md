@@ -9,7 +9,13 @@ Scavenger hunts are great team building events at conferences and meetings. And 
 
 The app is built on top of our Proximity Kit cloud service for iBeacons, which makes it possible to do all your app's iBeacon configuration in the cloud. This configurability is what makes creating different Beacon Scavenger Hunts with the same app possible.
 
-## Setup instructions
+##Building the App
+
+The app may be built using Android Studio 0.4.6 and Gradle 1.9. Other versions of this software may not compile. Make sure to have Android build tools version 19.0.0 downloaded into your Android SDK Manager as well. 
+
+To build the app, unzip the project file, open Android Studio and select Import Project. Select the build.gradle file within the top level of the project folder and hit OK. Click the Run button or select Run 'app' from the Run dropdown menu on the top bar.
+
+## Hunt Setup instructions
 
 Full setup instructions can be found [here.](http://developer.radiusnetworks.com/scavenger_hunt/instructions.html)
 
