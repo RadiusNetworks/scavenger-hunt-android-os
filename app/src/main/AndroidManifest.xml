@@ -4,6 +4,7 @@
     android:versionCode="2"
     android:versionName="1.1" >
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.VIBRATE"/>
     <application
         android:debuggable="false"
         android:name="com.radiusnetworks.scavengerhunt.ScavengerHuntApplication"

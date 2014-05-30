@@ -27,7 +27,7 @@
         android:alpha="0.6"
         android:layout_width="fill_parent"
         android:layout_height="50dp"
-        android:text="Start Over"
+        android:text="@string/sh_activity_targetcollection_button_startover"
         android:textSize="20dp"
         android:background="#FFFFFF"
         android:id="@+id/start_over_button"

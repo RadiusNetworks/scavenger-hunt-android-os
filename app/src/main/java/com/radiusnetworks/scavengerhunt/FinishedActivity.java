@@ -67,12 +67,12 @@ public class FinishedActivity extends Activity  {
 		final AlertDialog.Builder builder = new AlertDialog.Builder(this);
     	Hunt hunt = application.getHunt();
     	if (hunt.everythingFound()) {
-    		builder.setTitle("Are you sure you are finished?");		
-    		builder.setMessage("You will not be allowed to return to this page.");    		
+    		builder.setTitle(getString(R.string.sh_finishedactivity_dialog_completed_title));
+    		builder.setMessage(getString(R.string.sh_finishedactivity_dialog_completed_message));
     	}
     	else {
-    		builder.setTitle("Are you sure?");	// Are you sure you are finished?  You will not be allowed to return to this page		
-    		builder.setMessage("All found locations will be cleared.");    		
+    		builder.setTitle(getString(R.string.sh_finishedactivity_dialog_reset_title));
+    		builder.setMessage(getString(R.string.sh_finishedactivity_dialog_reset_message));
     	}
 		builder.setPositiveButton(android.R.string.cancel, null);
 		builder.setNegativeButton(android.R.string.ok, new OnClickListener() {
@@ -89,7 +89,8 @@ public class FinishedActivity extends Activity  {
 
 	public void onRedeemClicked(View view) {
 		setContentView(R.layout.sh_activity_redeemed);	    		
-		((TextView)findViewById(R.id.sh_redemption_text)).setText("Your completion code is: "+application.getHunt().getDeviceUuid());
+		((TextView)findViewById(R.id.sh_redemption_text)).setText(
+                getString(R.string.sh_finishedactivity_tv_redemptiontext_replacement) + application.getHunt().getDeviceUuid());
 
 	}
 

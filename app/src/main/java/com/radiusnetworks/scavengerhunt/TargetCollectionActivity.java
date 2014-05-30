@@ -121,8 +121,8 @@ public class TargetCollectionActivity extends Activity  {
       			Log.i(TAG, "force refresh");
       			adapter.notifyDataSetChanged();
       			gridView.invalidateViews();
-      			Toast toast = Toast.makeText(TargetCollectionActivity.this, "You've received badge "+
-                        application.getHunt().getFoundCount()+" of "+
+      			Toast toast = Toast.makeText(TargetCollectionActivity.this, getString(R.string.sh_targetcollectionactivity_found_line1) +//"You've received badge "+
+                        application.getHunt().getFoundCount()+  getString(R.string.sh_targetcollectionactivity_found_line2) + //" of "+
                         application.getHunt().getTargetList().size(), Toast.LENGTH_SHORT);
       			toast.show();      	    	 
       	     }

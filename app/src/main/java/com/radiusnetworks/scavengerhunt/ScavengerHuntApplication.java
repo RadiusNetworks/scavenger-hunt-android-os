@@ -95,7 +95,6 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         Log.d(TAG, "Application onCreate.  Hunt is "+hunt);
         backgroundPowerSaver = new BackgroundPowerSaver(this);
         manager = ProximityKitManager.getInstanceForApplication(this);
-        manager.getIBeaconManager().LOG_DEBUG = true;
         manager.setNotifier(this);
 
         if (!new PropertiesFile().exists()) {
@@ -103,7 +102,7 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
             return;
         }
         else {
-            startPk(null);
+            Log.d(TAG,"code not needed.");
         }
     }
 
@@ -133,7 +132,9 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
             this.codeNeeded = true;
         }
         else {
+            Log.d(TAG, "starting over");
             hunt.reset();
+            hunt.saveToPreferences(this);
         }
 
         Intent i = new Intent(activity, LoadingActivity.class);

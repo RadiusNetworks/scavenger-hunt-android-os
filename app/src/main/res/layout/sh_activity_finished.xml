@@ -20,7 +20,7 @@
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="15dp"
-        android:text="Congratulations!"
+        android:text="@string/sh_activity_finished_tv_congratulations"
         android:textColor="#FFFFFF"
         android:textSize="28dp"
         android:textStyle="bold" />
@@ -30,7 +30,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:text="You have successfully completed the\nScavenger Hunt.\n"
+        android:text="@string/sh_activity_finished_tv_completed"
         android:textColor="#FFFFFF"
         android:layout_below="@+id/sh_textView1"
         android:layout_centerHorizontal="true"
@@ -44,7 +44,7 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="42dp"
         android:onClick="onRedeemClicked"
-        android:text="Completion Code"
+        android:text="@string/sh_activity_finished_button_redeem"
         android:textColor="#3dbeee"
         style="@style/sh_custom_button" />
 

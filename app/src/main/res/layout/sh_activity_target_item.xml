@@ -17,7 +17,7 @@
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="0dp"
-        android:text="Distance"
+        android:text="@string/sh_activity_targetitem_tv_textview1"
         android:textColor="@android:color/white"
         android:textSize="60dp" />
 
@@ -27,7 +27,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/sh_textView1"
         android:layout_centerHorizontal="true"
-        android:text="--"
+        android:text="@string/sh_activity_targetitem_tv_distance"
         android:textColor="@android:color/white"
         android:textSize="150dp"
         android:textStyle="bold" />
@@ -38,7 +38,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/sh_distance"
         android:layout_centerHorizontal="true"
-        android:text="Meters"
+        android:text="@string/sh_activity_targetitem_tv_textview2"
         android:textColor="@android:color/white"
         android:textSize="60dp" />
 

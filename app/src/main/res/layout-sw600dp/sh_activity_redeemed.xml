@@ -19,7 +19,7 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="24dp"
         android:gravity="center"
-        android:text="Your completion code is XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+        android:text="@string/sh_activity_redeemed_tv_redemptiontext"
         android:textColor="#FFFFFF"
         android:textSize="40dp" />
 
@@ -32,7 +32,7 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="14dp"
         android:onClick="onResetClicked"
-        android:text="Finish"
+        android:text="@string/sh_activity_redeemed_button_finish"
         android:textSize="40dp"
         android:textColor="#3abeee" />
 

@@ -8,6 +8,12 @@
     tools:context=".LoadingActivity"
     android:focusable="true">
 
+    <RelativeLayout
+        android:id="@+id/textLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerInParent="true">
 
     <ImageView
         android:layout_width="wrap_content"
@@ -16,30 +22,32 @@
         android:src="@drawable/bolt"
         android:layout_centerHorizontal="true" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Beacon"
-        android:textStyle="bold"
-        android:textColor="#FFFFFF"
-        android:id="@+id/title1"
-        android:textSize="68dp"
-        android:layout_below="@+id/imageView"
-        android:layout_centerHorizontal="true" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="@string/sh_activity_code_title_line1"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:id="@+id/title1"
+            android:textSize="68dp"
+            android:layout_below="@+id/imageView"
+            android:layout_centerHorizontal="true"
+            android:gravity="center" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:textStyle="bold"
-        android:text="Scavenger Hunt"
-        android:textColor="#FFFFFF"
-        android:id="@+id/title2"
-        android:layout_below="@+id/title1"
-        android:layout_marginTop="-10dp"
-        android:textSize="68dp"
-        android:layout_centerHorizontal="true" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textStyle="bold"
+            android:text="@string/sh_activity_code_title_line2"
+            android:textColor="#FFFFFF"
+            android:id="@+id/title2"
+            android:layout_below="@+id/title1"
+            android:layout_marginTop="-10dp"
+            android:textSize="68dp"
+            android:layout_centerHorizontal="true"
+            android:gravity="center" />
 
     <RelativeLayout
         android:id="@+id/attributionContainer"
@@ -55,7 +63,7 @@
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:textColor="#CCCCFF"
-            android:text="Powered by "
+            android:text="@string/sh_activity_code_tv_powered_by"
             android:textSize="36dp"
             android:id="@+id/powered_by" />
 
@@ -77,29 +85,30 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:textColor="#ffffff"
-        android:text="HOW IT WORKS: Find the location for each of the scavenger hunt’s badges.  When you are within 10 meters of a location, you will see a notification and receive a colored badge."
+        android:text="@string/sh_activity_code_tv_howitworks"
         android:textSize="28dp"
         android:id="@+id/instructions"
         android:paddingTop="40dp"
         android:paddingLeft="40dp"
         android:paddingRight="40dp"
         android:paddingBottom="40dp"
+	android:layout_centerHorizontal="true"
         android:layout_below="@+id/attributionContainer" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Start"
+        android:text="@string/sh_activity_code_button_start"
         android:id="@+id/sh_start_button"
         android:width="200dp"
         android:textSize="40dp"
         android:paddingTop="10dp"
         android:paddingBottom="10dp"
         android:background="#ffffff"
-        android:textColor="#000000"
+        android:textColor="#3dbeee"
         android:layout_below="@+id/instructions"
         android:layout_centerHorizontal="true" />
-
+    </RelativeLayout>
 
     <!-- dialog -->
     <RelativeLayout
@@ -144,7 +153,7 @@
                 android:layout_marginLeft="5dp"
                 android:layout_height="wrap_content"
                 android:onClick="onCodeOkClicked"
-                android:text="OK"
+                android:text="@string/sh_activity_code_button_ok"
                 android:textColor="#000000"
                 android:layout_toRightOf="@+id/code"
                 android:layout_centerInParent="true" />
@@ -155,7 +164,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="Help"
+            android:text="@string/sh_activity_code_tv_help"
             android:id="@+id/help"
             android:layout_below="@+id/buttonWithInput"
             android:layout_centerHorizontal="true"
@@ -165,7 +174,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="Enter the 8 digit code provided by the scavenger hunt organizer. Tap help to learn how to organize a scavenger hunt or to get a sample code."
+            android:text="@string/sh_activity_code_tv_entercode"
             android:id="@+id/enterCode"
             android:layout_below="@+id/help"
             android:layout_centerHorizontal="true"
@@ -197,7 +206,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="Validating Code"
+            android:text="@string/sh_activity_code_tv_loadingmessage"
             android:textSize="30dp"
             android:id="@+id/loading_message"
             android:paddingBottom="20dp"
