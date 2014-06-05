@@ -128,6 +128,7 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
             hunt = null;
             remoteAssetCache = new RemoteAssetCache(this);
             remoteAssetCache.clear();
+            cancelAllNotifications();
 
             this.codeNeeded = true;
         }
@@ -135,6 +136,7 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
             Log.d(TAG, "starting over");
             hunt.reset();
             hunt.saveToPreferences(this);
+            cancelAllNotifications();
         }
 
         Intent i = new Intent(activity, LoadingActivity.class);
@@ -207,6 +209,7 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
                     if (hunt.everythingFound()) {
                         // switch to FinishedActivity to show player he/she has won
                         Log.d(TAG, "game is won");
+                        cancelAllNotifications();
                         Intent i = new Intent(collectionActivity, FinishedActivity.class);
                         i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                         startActivity(i);
@@ -431,6 +434,11 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         notificationManager.notify(1, builder.build());
     }
 
+    public void cancelAllNotifications(){
+        NotificationManager notificationManager =
+                (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.cancelAll();
+    }
     /*
      Converts a target image URL to a variant needed for this platform.  The variant URL might
      add a suffix indicating a larger size for the image.  A suffix is also added if the target
