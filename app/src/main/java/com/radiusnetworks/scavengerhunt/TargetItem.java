@@ -20,15 +20,21 @@ package com.radiusnetworks.scavengerhunt;
  */
 public class TargetItem implements Comparable<TargetItem> {
 	private String id;
+    private long timeNotifLastSent;
 	private boolean found;
 
 	public TargetItem(String id) {
-		this.id=id;
+        this.id=id;
+        this.timeNotifLastSent = 0;
 	}
 
 	public String getId() {
 		return id;
 	}
+
+    public long getTimeNotifLastSent() {
+        return timeNotifLastSent;
+    }
 
 	public boolean isFound() {
 		return found;
@@ -37,6 +43,10 @@ public class TargetItem implements Comparable<TargetItem> {
 	public void setFound(boolean found) {
 		this.found = found;
 	}
+
+    public void setTimeNotifLastSent(long newTimeNotifLastSent) {
+        this.timeNotifLastSent = newTimeNotifLastSent;
+    }
 
     @Override
     public int compareTo(TargetItem targetItem) {

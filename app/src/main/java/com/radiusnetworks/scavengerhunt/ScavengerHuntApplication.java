@@ -75,6 +75,7 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
 
     private static final String TAG = "ScavengerHuntApplication";
     private static final Double MINIMUM_TRIGGER_DISTANCE_METERS = 10.0;
+    private static final long REPEAT_NOTIF_RESTRICTED_PERIOD_MSECS = 300000;
     private ProximityKitManager manager;
     private Hunt hunt;
     private final long[] VIBRATOR_PATTERN = {0l, 500l, 0l}; // start immediately, vigrate for 500ms, sleep for 0ms
@@ -96,6 +97,10 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         backgroundPowerSaver = new BackgroundPowerSaver(this);
         manager = ProximityKitManager.getInstanceForApplication(this);
         manager.setNotifier(this);
+
+        // Include IBeacon logs and shorten background polling
+        //manager.getIBeaconManager().setDebug(true);
+        //manager.getIBeaconManager().setBackgroundBetweenScanPeriod(30000);
 
         if (!new PropertiesFile().exists()) {
             this.codeNeeded = true;
@@ -128,7 +133,6 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
             hunt = null;
             remoteAssetCache = new RemoteAssetCache(this);
             remoteAssetCache.clear();
-            cancelAllNotifications();
 
             this.codeNeeded = true;
         }
@@ -136,8 +140,9 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
             Log.d(TAG, "starting over");
             hunt.reset();
             hunt.saveToPreferences(this);
-            cancelAllNotifications();
         }
+
+        cancelAllNotifications();
 
         Intent i = new Intent(activity, LoadingActivity.class);
         i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -200,8 +205,19 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
 
 
         if (hunt.getElapsedTime() != 0) {
+
+            long timeTargetNotifLastSent = target.getTimeNotifLastSent();
+            long currentTimeMsecs = System.currentTimeMillis();
+
+            // Logic to determine when a local notification will be sent
+            if ((currentTimeMsecs - timeTargetNotifLastSent) > REPEAT_NOTIF_RESTRICTED_PERIOD_MSECS && hunt.allowNotification() && !target.isFound()) {
+                Log.d(TAG, "Sending notification");
+                sendNotification();
+                target.setTimeNotifLastSent(currentTimeMsecs);
+            }
+
             if (iBeacon.getAccuracy() < MINIMUM_TRIGGER_DISTANCE_METERS && !target.isFound()) {
-                Log.d(TAG, "found an item");
+                Log.d(TAG, "Found an item. iBeacon.getAccuracy(): " + iBeacon.getAccuracy());
                 target.setFound(true);
                 hunt.saveToPreferences(this);
                 if (collectionActivity != null) {
@@ -231,14 +247,6 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
     public void didEnterRegion(Region region) {
         // Called when one of the iBeacons defined in ProximityKit first appears
         Log.d(TAG, "didEnterRegion");
-        if (hunt != null) {
-            if (hunt.getElapsedTime() == 0) {
-                Log.d(TAG, "Not sending notification because the hunt has not been started yet.  Elapsed time is " + hunt.getElapsedTime());
-            } else {
-                Log.d(TAG, "Sending notification.");
-                sendNotification();
-            }
-        }
     }
 
     @Override
@@ -418,7 +426,8 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
                         .setContentTitle("Scavenger Hunt")
                         .setContentText("A scavenger hunt location is nearby.")
                         .setVibrate(VIBRATOR_PATTERN)
-                        .setSmallIcon(R.drawable.sh_notification_icon);
+                        .setSmallIcon(R.drawable.sh_notification_icon)
+                        .setAutoCancel(true);
 
 
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
@@ -426,7 +435,7 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         PendingIntent resultPendingIntent =
                 stackBuilder.getPendingIntent(
                         0,
-                        PendingIntent.FLAG_UPDATE_CURRENT
+                        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_ONE_SHOT
                 );
         builder.setContentIntent(resultPendingIntent);
         NotificationManager notificationManager =
@@ -434,11 +443,12 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         notificationManager.notify(1, builder.build());
     }
 
-    public void cancelAllNotifications(){
+    public void cancelAllNotifications() {
         NotificationManager notificationManager =
                 (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.cancelAll();
     }
+
     /*
      Converts a target image URL to a variant needed for this platform.  The variant URL might
      add a suffix indicating a larger size for the image.  A suffix is also added if the target
