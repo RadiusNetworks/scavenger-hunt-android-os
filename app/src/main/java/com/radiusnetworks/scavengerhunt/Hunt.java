@@ -34,6 +34,7 @@ import android.util.Log;
 public class Hunt {
     private static final String TAG = "Hunt";
     private long startTime = 0;
+    private static final long NOTIF_RESTRICTED_PERIOD_MSECS = 60000;
     private long completedTime;
     private String deviceUuid;
     private List<TargetItem> targetList;
@@ -99,6 +100,19 @@ public class Hunt {
         return true;
     }
 
+    public boolean allowNotification() {
+        long currentTimeMsecs = System.currentTimeMillis();
+        Iterator<TargetItem> i = this.targetList.iterator();
+        while (i.hasNext()) {
+            TargetItem target = i.next();
+            if ((currentTimeMsecs - target.getTimeNotifLastSent()) < NOTIF_RESTRICTED_PERIOD_MSECS) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+
     public List<TargetItem> getTargetList() {
         return this.targetList;
     }
@@ -146,7 +160,7 @@ public class Hunt {
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor editor = settings.edit();
         editor.putLong("sh_start_time", this.startTime);
-        editor.putString("sh_hunt_device_uuid", this.deviceUuid);
+        editor.putString("sh_device_uuid", this.deviceUuid);
         editor.putString("sh_target_ids", getTargetIds());
         editor.putString("sh_target_ids_found", getTargetIdsFound());
         editor.commit();
