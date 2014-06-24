@@ -6,7 +6,7 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
     <application
-        android:debuggable="false"
+        android:debuggable="true"
         android:name="com.radiusnetworks.scavengerhunt.ScavengerHuntApplication"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"

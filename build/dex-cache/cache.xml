@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<pre-dex-items>
+
+    <item
+        dex="/Users/matthewbtyler/Documents/4DK/GitHub/scavenger-hunt-android-os/app/build/pre-dexed/debug/classes-9d06d7aaac65c73c5804fff300f949d7a23c512f.jar"
+        jar="/Users/matthewbtyler/Documents/4DK/GitHub/scavenger-hunt-android-os/build/exploded-aar/com.radiusnetworks/AndroidProximityLibrary/1.1.3/classes.jar"
+        jumboMode="false"
+        revision="19.0.0"
+        sha1="99293f93b3e33a1936ae6206a9b53348e9a8b4ae"/>
+    <item
+        dex="/Users/matthewbtyler/Documents/4DK/GitHub/scavenger-hunt-android-os/app/build/pre-dexed/debug/classes-daf7e2b62c7844e79483ece9580fddc00d1187cd.jar"
+        jar="/Users/matthewbtyler/Documents/4DK/GitHub/scavenger-hunt-android-os/build/exploded-aar/com.android.support/appcompat-v7/19.1.0/classes.jar"
+        jumboMode="false"
+        revision="19.0.0"
+        sha1="3499ceba05ca1f6037c6a2fad73df8f636224a28"/>
+    <item
+        dex="/Users/matthewbtyler/Documents/4DK/GitHub/scavenger-hunt-android-os/app/build/pre-dexed/debug/support-v4-19.1.0-ed6e0b7d365aa92fed89ccafacd40fdad99b7537.jar"
+        jar="/Applications/Android Studio 0.4.2/Android Studio.app/sdk/extras/android/m2repository/com/android/support/support-v4/19.1.0/support-v4-19.1.0.jar"
+        jumboMode="false"
+        revision="19.0.0"
+        sha1="85f201b380937e61a9dce6ca90ccf6872abbfb67"/>
+    <item
+        dex="/Users/matthewbtyler/Documents/4DK/GitHub/scavenger-hunt-android-os/app/build/pre-dexed/debug/AndroidIBeaconLibrary-0c3241cebc1e4c25ea89610974625617d619b264.jar"
+        jar="/Users/matthewbtyler/Documents/4DK/GitHub/scavenger-hunt-android-os/build/exploded-aar/com.radiusnetworks/AndroidProximityLibrary/1.1.3/libs/AndroidIBeaconLibrary.jar"
+        jumboMode="false"
+        revision="19.0.0"
+        sha1="7020d950990e19618197754717448e60b06f74fa"/>
+
+</pre-dex-items>
