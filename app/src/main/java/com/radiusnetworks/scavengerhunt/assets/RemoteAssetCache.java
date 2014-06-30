@@ -16,11 +16,16 @@ package com.radiusnetworks.scavengerhunt.assets;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.ColorMatrix;
+import android.graphics.ColorMatrixColorFilter;
+import android.graphics.Paint;
 import android.util.Log;
 import android.widget.ImageView;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -35,6 +40,7 @@ public class RemoteAssetCache {
     private static final String TAG = "RemoteAssetCache";
     private int assetsToDownload = 0;
     private int failureCount = 0;
+    private ArrayList<String> imagesToGreyOut = new ArrayList<String>();
     private Context context;
     private static final Pattern SIZE_PATTERN = Pattern.compile("^(.*)(_[0-9]+)(\\..*)");
     private AssetFetcherCallback callback;
@@ -66,6 +72,7 @@ public class RemoteAssetCache {
         this.callback = callback;
         assetsToDownload = assetUrls.size();
 
+
         for (String standardizedFilename : assetUrls.keySet()) {
             final String filenameToSave = standardizedFilename;
             final String assetUrl = assetUrls.get(standardizedFilename);
@@ -75,15 +82,8 @@ public class RemoteAssetCache {
                 public void requestComplete() {
                     Log.d(TAG, "Successfully downloaded "+assetUrl);
                     assetsToDownload--;
-                    if (assetsToDownload == 0) {
-                        if (failureCount == 0) {
-                            RemoteAssetCache.this.callback.requestComplete();
-                        }
-                        else {
-                            RemoteAssetCache.this.callback.requestFailed(lastResponseCode, lastException);
-                        }
 
-                    }
+                    checkDownloadComplete();
                 }
 
                 @Override
@@ -103,25 +103,30 @@ public class RemoteAssetCache {
                             public void requestComplete() {
                                 Log.d(TAG, "Successfully downloaded "+standardImageUrl);
                                 assetsToDownload--;
-                                if (assetsToDownload == 0) {
-                                    if (failureCount == 0) {
-                                        RemoteAssetCache.this.callback.requestComplete();
-                                    }
-                                    else {
-                                        RemoteAssetCache.this.callback.requestFailed(lastResponseCode, lastException);
-                                    }
 
-                                }
+                                checkDownloadComplete();
                             }
 
                             @Override
                             public void requestFailed(Integer responseCode, Exception e) {
-                                Log.w(TAG, "Failed to load "+ standardImageUrl);
+                                Log.w(TAG, "Failed to load a second time standardImageUrl ="+ standardImageUrl + ". responsecode = "+responseCode);
                                 RemoteAssetCache.this.lastException = e;
                                 RemoteAssetCache.this.lastResponseCode = responseCode;
-                                assetsToDownload--;
-                                failureCount++;
 
+                                if (standardImageUrl.contains("_found")) {
+                                    Log.d(TAG,"failed to download _found image, attempting to use a greyed out version of the base image instead.");
+
+
+                                    //save name of base image to a list
+                                    // then run through list after all downloads complete to grey out images
+                                    imagesToGreyOut.add(filenameToSave);
+                                    assetsToDownload--;
+                                    checkDownloadComplete();
+
+                                } else {
+                                    assetsToDownload--;
+                                    failureCount++;
+                                }
                             }
                         });
                         assetFetcher.execute();
@@ -131,14 +136,7 @@ public class RemoteAssetCache {
                         failureCount++;
                         assetsToDownload--;
                     }
-                    if (assetsToDownload == 0) {
-                        if (failureCount == 0) {
-                            RemoteAssetCache.this.callback.requestComplete();
-                        }
-                        else {
-                            RemoteAssetCache.this.callback.requestFailed(lastResponseCode, lastException);
-                        }
-                    }
+                    checkDownloadComplete();
 
                 }
             });
@@ -146,6 +144,21 @@ public class RemoteAssetCache {
         }
 
     }
+
+    private void checkDownloadComplete(){
+        if (assetsToDownload == 0) {
+            if (imagesToGreyOut.size() !=0)
+                greyOutImageList(imagesToGreyOut);
+
+            if (failureCount == 0) {
+                RemoteAssetCache.this.callback.requestComplete();
+            } else {
+                RemoteAssetCache.this.callback.requestFailed(lastResponseCode, lastException);
+            }
+        }
+    }
+
+
 
     /**
      * Returns an ImageView of an image asset in the cache, keyed by the local filename
@@ -264,5 +277,84 @@ public class RemoteAssetCache {
     }
 
 
+    /**
+     *
+     * @param imageList
+     */
+    private void greyOutImageList(ArrayList<String> imageList){
+        for (String filename : imageList){
+
+            try {
+                //attempting to retrieve the base image from file if it has completed downloading already
+                if (!convertToGreyImageAndSaveAll(filename))
+                    failureCount++;
+
+            } catch (NullPointerException npe) {
+                npe.printStackTrace();
+
+                failureCount++;
+            }
+        }
+    }
+
+    /**
+     * In the event that a _found image is not downloading properly, this opens the base image,
+     * greys it out (reduces saturation and opacity), then saves the colorful image to file
+     * in the place of the _found image, and saves the grey image as the 'not found' image.
+     *
+     * @param filenameToSave
+     * @return success
+     */
+    private boolean convertToGreyImageAndSaveAll(String filename){
+
+        Log.d(TAG,"convertToGreyImageAndSaveAll.  filename = "+filename);
+        //grey out first image and resave as _found image.
+        Bitmap bitmap = BitmapFactory.decodeFile(context.getFilesDir().getAbsolutePath()+"/"+filename.replace("_found",""));
+        Bitmap grayBitmap = greyOutImage(bitmap);
+
+        //saving original image to _found file and saving greyed-out image to original file
+        return (saveImageToFile(bitmap, filename) && saveImageToFile(grayBitmap, filename.replace("_found","")));
+    }
+
+    private boolean saveImageToFile(Bitmap bitmap, String filenameToSave) {
+        FileOutputStream out = null;
+        try {
+            out = new FileOutputStream(context.getFilesDir().getAbsolutePath()+"/"+filenameToSave);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 90, out);
+            Log.w(TAG, "Successfully saved file: "+ filenameToSave);
+
+            return true;
+        } catch (Exception e2) {
+            e2.printStackTrace();
+        } finally {
+            try{
+                out.close();
+            } catch(Throwable ignore) {}
+        }
+        return false;
+    }
+
+    /**
+     * Removing saturation of bitmap and lowering opacity by 50%
+     * @param src original bitmap
+     * @return greyed out bitmap
+     */
+    private Bitmap greyOutImage(Bitmap src) {
+        int w = src.getWidth();
+        int h = src.getHeight();
+
+        Bitmap bitmapResult = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+        Canvas canvasResult = new Canvas(bitmapResult);
+        Paint paint = new Paint();
+        ColorMatrix colorMatrix = new ColorMatrix();
+        colorMatrix.setSaturation(0f);//making image black and white
+        ColorMatrixColorFilter filter = new ColorMatrixColorFilter(colorMatrix);
+        paint.setColorFilter(filter);
+        paint.setAlpha(127); //lowering opacity by 50%
+
+        canvasResult.drawBitmap(src, 0, 0, paint);
+
+        return bitmapResult;
+    }
 
 }
