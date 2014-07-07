@@ -19,18 +19,40 @@ package com.radiusnetworks.scavengerhunt;
  * value and a flag to whether or not this target has been found
  */
 public class TargetItem implements Comparable<TargetItem> {
-	private String id;
+    private String id;
+    private String title;
+    private String description;
     private long timeNotifLastSent;
 	private boolean found;
 
 	public TargetItem(String id) {
         this.id=id;
+        this.title = "";
+        this.description = "";
         this.timeNotifLastSent = 0;
 	}
+    public TargetItem(String id, String title, String description) {
+        this.id=id;
+        this.title = title;
+        this.description = description;
+        this.timeNotifLastSent = 0;
+    }
 
 	public String getId() {
 		return id;
 	}
+    public String getTitle() {
+        return title;
+    }
+    public String getDescription() {
+        return description;
+    }
+    public void setTitle(String newTitle) {
+        this.title = newTitle;
+    }
+    public void setDescription(String newDescription) {
+        this.description = newDescription;
+    }
 
     public long getTimeNotifLastSent() {
         return timeNotifLastSent;

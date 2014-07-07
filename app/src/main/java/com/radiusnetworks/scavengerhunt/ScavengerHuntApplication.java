@@ -279,6 +279,19 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
             String huntId = iBeacon.getAttributes().get("hunt_id");
             if (huntId != null) {
                 TargetItem target = new TargetItem(huntId);
+
+                String title = iBeacon.getAttributes().get("title");
+                if (title != null) {
+                    target.setTitle(title);
+                    Log.d(TAG, "title = "+title);
+                } else {                     Log.d(TAG, "title = null");}
+
+                String description = iBeacon.getAttributes().get("description");
+                if (description != null) {
+                    target.setDescription(description);
+                    Log.d(TAG, "description = "+description);
+                } else {                     Log.d(TAG, "description = null");}
+
                 targets.add(target);
                 String imageUrl = iBeacon.getAttributes().get("image_url");
                 if (imageUrl == null) {

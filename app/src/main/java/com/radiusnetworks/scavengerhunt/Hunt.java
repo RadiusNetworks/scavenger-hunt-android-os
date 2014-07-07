@@ -15,17 +15,17 @@
 package com.radiusnetworks.scavengerhunt;
 
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
+import android.util.Log;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
-import android.util.Log;
 
 /**
  * Manages the state of the scavenger hunt, what targets are found, how long it has been in progress,
@@ -133,7 +133,7 @@ public class Hunt {
             TargetItem target = i.next();
             if (target.isFound()) {
                 if (idsFound.length() != 0) {
-                    idsFound.append(",");
+                    idsFound.append("|");
                 }
                 idsFound.append(target.getId());
             }
@@ -148,13 +148,40 @@ public class Hunt {
         while (i.hasNext()) {
             TargetItem target = i.next();
             if (ids.length() != 0) {
-                ids.append(",");
+                ids.append("|");
             }
             ids.append(target.getId());
         }
         return ids.toString();
     }
 
+    // make a string csv of target ids for easy saving to preferences
+    private String getTargetTitles() {
+        StringBuilder ids = new StringBuilder();
+        Iterator<TargetItem> i = this.targetList.iterator();
+        while (i.hasNext()) {
+            TargetItem target = i.next();
+            if (ids.length() != 0) {
+                ids.append("|");
+            }
+            ids.append(target.getTitle());
+        }
+        return ids.toString();
+    }
+
+    // make a string csv of target ids for easy saving to preferences
+    private String getTargetDescriptions() {
+        StringBuilder ids = new StringBuilder();
+        Iterator<TargetItem> i = this.targetList.iterator();
+        while (i.hasNext()) {
+            TargetItem target = i.next();
+            if (ids.length() != 0) {
+                ids.append("|");
+            }
+            ids.append(target.getDescription());
+        }
+        return ids.toString();
+    }
 
     public void saveToPreferences(Context context) {
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
@@ -163,6 +190,9 @@ public class Hunt {
         editor.putString("sh_device_uuid", this.deviceUuid);
         editor.putString("sh_target_ids", getTargetIds());
         editor.putString("sh_target_ids_found", getTargetIdsFound());
+        editor.putString("sh_target_titles", getTargetTitles());
+        editor.putString("sh_target_descriptions", getTargetDescriptions());
+
         editor.commit();
     }
 
@@ -171,14 +201,21 @@ public class Hunt {
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
         hunt.startTime = settings.getLong("sh_start_time", hunt.startTime);
         hunt.deviceUuid = settings.getString("sh_device_uuid", hunt.deviceUuid == null ? java.util.UUID.randomUUID().toString() : hunt.deviceUuid);
+
         String targetIdsFound = settings.getString("sh_target_ids_found", "");
         String targetIds = settings.getString("sh_target_ids", "");
+        String targetTitles = settings.getString("sh_target_titles", "");
+        String targetDescriptions = settings.getString("sh_target_descriptions", "");
         List<String> foundTargetIdList = Arrays.asList(targetIdsFound.split(","));
         Log.d(TAG, "device uuid is "+hunt.deviceUuid);
 
         hunt.targetList = new ArrayList<TargetItem>();
-        for (String targetId : targetIds.split(",")) {
-            hunt.targetList.add(new TargetItem(targetId));
+        String[] titlesStrings = targetTitles.split("|");
+        String[] descriptionsStrings = targetDescriptions.split("|");
+        int i = 0;
+        for (String targetId : targetIds.split("|")) {
+            hunt.targetList.add(new TargetItem(targetId, titlesStrings[i], descriptionsStrings[i]));
+            i++;
         }
 
         for (String foundTargetId : foundTargetIdList) {
