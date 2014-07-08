@@ -83,6 +83,7 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
     private TargetCollectionActivity collectionActivity = null;
     private TargetItemActivity itemActivity = null;
     private LoadingActivity loadingActivity = null;
+    private InstructionActivity instructionActivity = null;
     private RemoteAssetCache remoteAssetCache;
     private String loadingFailedTitle;
     private String loadingFailedMessage;
@@ -156,6 +157,10 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         if (this.loadingFailedTitle != null) {
             showFailedErrorMessage();
         }
+    }
+
+    public void setInstructionActivity(InstructionActivity activity) {
+        this.instructionActivity = activity;
     }
 
 
@@ -303,6 +308,10 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
                     urlMap.put("target" + huntId + "_found", variantTargetImageUrlForBaseUrlString(imageUrl, true));
                     urlMap.put("target" + huntId, variantTargetImageUrlForBaseUrlString(imageUrl, false));
                 }
+
+                String splashUrl = iBeacon.getAttributes().get("splash_url");
+                Log.e(TAG, "splashUrl = "+splashUrl);
+
             }
         }
 
@@ -383,7 +392,8 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         if (validateRequiredImagesPresent()) {
             // Yes, we have everything we need to start up.  Let's start the Collection Activity
             this.hunt.start();
-            Intent i = new Intent(this, TargetCollectionActivity.class);
+            //Intent i = new Intent(this, TargetCollectionActivity.class);
+            Intent i = new Intent(this, InstructionActivity.class);
             i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(i);
             this.loadingActivity.finish(); // do this so that if we hit back, the loading activity won't show up again
