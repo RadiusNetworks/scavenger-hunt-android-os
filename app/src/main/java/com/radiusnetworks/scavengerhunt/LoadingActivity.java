@@ -303,5 +303,8 @@ public class LoadingActivity extends Activity {
         return true;
     }
 
-
+    @Override
+    public void onBackPressed() {
+       this.finish();
+    }
 }

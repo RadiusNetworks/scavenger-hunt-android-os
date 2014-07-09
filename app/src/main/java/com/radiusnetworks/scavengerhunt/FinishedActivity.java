@@ -18,7 +18,6 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
-import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -60,11 +59,18 @@ public class FinishedActivity extends Activity  {
         //setting custom text and background color
         Map<String,String> customStartScreenData = application.getHunt().getCustomStartScreenData();
 
-        //setting custom background color
-        String colorHex = application.getHunt().getCustomStartScreenData().get("finish_background_color");
-        colorHex = colorHex.replaceAll("0x", "#");
-        int color = Color.parseColor(colorHex);
-        getWindow().getDecorView().setBackgroundColor(color);
+        try {
+            //setting custom background color
+            String colorHex = application.getHunt().getCustomStartScreenData().get("finish_background_color");
+            colorHex = colorHex.replaceAll("0x", "#");
+            int color = Color.parseColor(colorHex);
+            getWindow().getDecorView().setBackgroundColor(color);
+        }catch(Exception e){
+            //setting standard blue background color
+            String colorHex = "#3DBEEE";
+            int color = Color.parseColor(colorHex);
+            getWindow().getDecorView().setBackgroundColor(color);
+        }
 
         ((TextView) this.findViewById(R.id.sh_textView1)).setText(customStartScreenData.get("finish_text_1"));
         ((Button) this.findViewById(R.id.sh_redeem_button)).setText(customStartScreenData.get("finish_button_name"));
@@ -79,7 +85,7 @@ public class FinishedActivity extends Activity  {
 	protected void onDestroy() {
 		super.onDestroy();
 	}
-	
+	/*
 	@Override
 	protected void onResume() {
 		super.onResume();
@@ -91,12 +97,33 @@ public class FinishedActivity extends Activity  {
 		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.sh_activity_finished);
 
+
+        //custom images
+        ImageView imageView =  (ImageView) this.findViewById(R.id.imageView);
+        Bitmap bitmap = application.getCustomAssetCache().getBitmapByName("finish_image");
+        if (bitmap != null)
+            imageView.setImageBitmap(bitmap);
+        else Log.e(TAG, "custom finished screen logo == null when pulled from file.");
+
+        //setting custom text and background color
+        Map<String,String> customStartScreenData = application.getHunt().getCustomStartScreenData();
+
+        //setting custom background color
+        String colorHex = application.getHunt().getCustomStartScreenData().get("finish_background_color");
+        colorHex = colorHex.replaceAll("0x", "#");
+        int color = Color.parseColor(colorHex);
+        getWindow().getDecorView().setBackgroundColor(color);
+
+        ((TextView) this.findViewById(R.id.sh_textView1)).setText(customStartScreenData.get("finish_text_1"));
+        ((Button) this.findViewById(R.id.sh_redeem_button)).setText(customStartScreenData.get("finish_button_name"));
+
+
         ((TextView)findViewById(R.id.sh_redemption_text)).setText(
                 getString(R.string.sh_finishedactivity_tv_redemptiontext_replacement) +
                         application.getHunt().getDeviceUuid());
 
     }
-	
+	*/
 
 	public void onFinishedClicked(View view) {
 		final AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -114,6 +141,8 @@ public class FinishedActivity extends Activity  {
 			@Override
 			public void onClick(DialogInterface arg0, int arg1) {
                 application.startOver(FinishedActivity.this);
+                //closing FinishedActivity to prevent coming back here if back button is pressed on next screen
+                FinishedActivity.this.finish();
 			}
 			
 		});
@@ -121,5 +150,10 @@ public class FinishedActivity extends Activity  {
 		dialog.show();
 		
 	}
-	
+
+    @Override
+    public void onBackPressed() {
+        // do nothing.
+    }
+
 }
