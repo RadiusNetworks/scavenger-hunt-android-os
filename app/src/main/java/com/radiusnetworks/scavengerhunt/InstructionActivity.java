@@ -53,6 +53,14 @@ public class InstructionActivity extends Activity {
         application.setInstructionActivity(this);
 
         setupInstructionView();
+
+        //setting custom splash image
+        ImageView splash = (ImageView) this.findViewById(R.id.splash);
+        Bitmap bitmap = application.getCustomAssetCache().getBitmapByName("splash");
+        if (bitmap != null)
+            splash.setImageBitmap(bitmap);
+        else Log.e(TAG, "custom splash image == null when pulled from file.");
+
         splashHandler.postDelayed(splashRunnable, 2000);
 
 
@@ -82,7 +90,7 @@ public class InstructionActivity extends Activity {
         Bitmap bitmap = application.getCustomAssetCache().getBitmapByName("instruction_image");
         if (bitmap != null)
             imageView.setImageBitmap(bitmap);
-        else Log.e(TAG, "custom splash image == null when pulled from file.");
+        else Log.e(TAG, "custom instruction image == null when pulled from file.");
 
 
         //setting custom text and background color
@@ -103,10 +111,6 @@ public class InstructionActivity extends Activity {
     private void triggerSplashAnimation(){
         //fading out splash screen
         ImageView splash = (ImageView) this.findViewById(R.id.splash);
-        Bitmap bitmap = application.getCustomAssetCache().getBitmapByName("splash");
-        if (bitmap != null)
-            splash.setImageBitmap(bitmap);
-        else Log.e(TAG, "custom splash image == null when pulled from file.");
 
         Animation fadeOut = AnimationUtils.loadAnimation(this, R.anim.fade_out);
         splash.startAnimation(fadeOut);
