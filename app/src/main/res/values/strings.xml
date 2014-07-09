@@ -11,7 +11,7 @@
     <string name="sh_activity_code_tv_powered_by">Powered by </string>
     <string name="rn_underline"><u>Radius Networks</u></string>
     <string name="sh_activity_code_button_start">Start</string>
-    <string name="sh_activity_code_tv_howitworks">HOW IT WORKS: Find the location for each of the scavenger hunt’s badges.  When you are within 10 meters of a location, you will see a notification and receive a colored badge.</string>
+    <string name="sh_activity_code_tv_howitworks">HOW IT WORKS: Find the location for each of the scavenger hunt’s badges.  When you reach a location, you will see a notification and receive a colored badge.</string>
     <string name="sh_activity_code_button_ok">OK</string>
     <string name="sh_activity_code_tv_help">Help</string>
     <string name="sh_activity_code_tv_entercode">Enter the 8 digit code provided by the scavenger hunt organizer. Tap help to learn how to organize a scavenger hunt or to get a sample code.</string>
@@ -21,7 +21,7 @@
     <!-- sh_activity_finished -->
     <string name="sh_activity_finished_tv_congratulations">Congratulations!</string>
     <string name="sh_activity_finished_tv_completed">You have successfully completed the\nScavenger Hunt.</string>
-    <string name="sh_activity_finished_button_redeem">Completion Code</string>
+    <string name="sh_activity_finished_button_redeem">Finish</string>
 
     <!-- sh_activity_redeemed -->
     <string name="sh_activity_redeemed_tv_redemptiontext">Your completion code is XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX</string>

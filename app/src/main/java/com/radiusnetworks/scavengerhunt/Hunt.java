@@ -245,4 +245,12 @@ public class Hunt {
         return hunt;
     }
 
+    public boolean hasCustomStartScreen() {
+        if (customStartScreenData != null && (!customStartScreenData.isEmpty())) {
+            Log.e(TAG, "This hunt has a custom start screen because customStartScreenData.isEmpty(): " + customStartScreenData.isEmpty());
+            return true;
+        }
+        return false;
+    }
+
 }

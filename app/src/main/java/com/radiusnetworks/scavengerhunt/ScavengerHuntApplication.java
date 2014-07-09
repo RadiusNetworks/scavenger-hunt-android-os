@@ -450,10 +450,17 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         }
 
         if (validateRequiredImagesPresent()) {
-            // Yes, we have everything we need to start up.  Let's start the Collection Activity
+            // Yes, we have everything we need to start up.
             this.hunt.start();
-            //Intent i = new Intent(this, TargetCollectionActivity.class);
-            Intent i = new Intent(this, InstructionActivity.class);
+            Intent i;
+
+            if (hunt.hasCustomStartScreen()) {
+                i = new Intent(this, InstructionActivity.class);
+            }
+            else {
+                i = new Intent(this, TargetCollectionActivity.class);
+            }
+
             i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(i);
             this.loadingActivity.finish(); // do this so that if we hit back, the loading activity won't show up again
