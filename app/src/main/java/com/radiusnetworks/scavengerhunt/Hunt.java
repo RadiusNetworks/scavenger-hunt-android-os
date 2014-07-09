@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Manages the state of the scavenger hunt, what targets are found, how long it has been in progress,
@@ -38,6 +39,10 @@ public class Hunt {
     private long completedTime;
     private String deviceUuid;
     private List<TargetItem> targetList;
+    private Map<String,String> customStartScreenData;
+
+    private Hunt() {
+    }
 
     public Hunt(Context context, List<TargetItem> targets) {
         this.targetList = targets;
@@ -45,7 +50,18 @@ public class Hunt {
         this.deviceUuid = settings.getString("sh_device_uuid", this.deviceUuid == null ? java.util.UUID.randomUUID().toString() : this.deviceUuid);
     }
 
-    private Hunt() {
+    public Hunt(Context context, List<TargetItem> targets, Map<String,String> customStartScreenData) {
+        this.targetList = targets;
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+        this.deviceUuid = settings.getString("sh_device_uuid", this.deviceUuid == null ? java.util.UUID.randomUUID().toString() : this.deviceUuid);
+        this.customStartScreenData = customStartScreenData;
+    }
+
+    public Map<String,String> getCustomStartScreenData(){
+        return this.customStartScreenData;
+    }
+    public void setCustomStartScreenData(Map<String,String>customStartScreenData){
+        this.customStartScreenData =customStartScreenData;
     }
 
     public TargetItem getTargetById(String id) {

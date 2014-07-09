@@ -26,7 +26,8 @@
     <!-- sh_activity_redeemed -->
     <string name="sh_activity_redeemed_tv_redemptiontext">Your completion code is XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX</string>
     <string name="sh_activity_redeemed_button_finish">Finish</string>
-    <string name="sh_activity_redeemed_tv_redemptiontext_replacement">Your completion code is: </string>
+    <string name="sh_activity_redeemed_tv_redemptiontext_replacement">Your completion code is:&#160;</string>
+<!--    <string name="sh_activity_redeemed_tv_redemptiontext_replacement">Your completion code is: </string>  -->
     Your completion code is:    <!-- sh_activity_target_collection -->
     <string name="sh_activity_targetcollection_button_startover">Start Over</string>
 
@@ -37,14 +38,16 @@
 
     <!-- TargetCollectionActivity.java -->
     <string name="sh_targetcollectionactivity_found_line1">You’ve received badge </string>
-    <string name="sh_targetcollectionactivity_found_line2"> of </string>
+    <string name="sh_targetcollectionactivity_found_line2">&#160;of&#160;</string>
+  <!--  <string name="sh_targetcollectionactivity_found_line2">  of  </string> -->
 
     <!-- FinishedActivity.java -->
     <string name="sh_finishedactivity_dialog_completed_title">Are you sure you are finished?</string>
     <string name="sh_finishedactivity_dialog_completed_message">You will not be allowed to return to this page.</string>
     <string name="sh_finishedactivity_dialog_reset_title">Are you sure?</string>
     <string name="sh_finishedactivity_dialog_reset_message">All found locations will be cleared.</string>
-    <string name="sh_finishedactivity_tv_redemptiontext_replacement">Your completion code is: </string>
+    <string name="sh_finishedactivity_tv_redemptiontext_replacement">Your completion code is:&#160;</string>
+    <!--    <string name="sh_finishedactivity_tv_redemptiontext_replacement">Your completion code is: </string> -->
 
     <!-- local notification -->
 

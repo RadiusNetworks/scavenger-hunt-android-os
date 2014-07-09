@@ -37,6 +37,7 @@ import com.radiusnetworks.proximity.ibeacon.powersave.BackgroundPowerSaver;
 import com.radiusnetworks.proximity.licensing.PropertiesFile;
 import com.radiusnetworks.proximity.model.KitIBeacon;
 import com.radiusnetworks.scavengerhunt.assets.AssetFetcherCallback;
+import com.radiusnetworks.scavengerhunt.assets.CustomAssetCache;
 import com.radiusnetworks.scavengerhunt.assets.RemoteAssetCache;
 
 import java.util.ArrayList;
@@ -85,6 +86,7 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
     private LoadingActivity loadingActivity = null;
     private InstructionActivity instructionActivity = null;
     private RemoteAssetCache remoteAssetCache;
+    private CustomAssetCache customAssetCache;
     private String loadingFailedTitle;
     private String loadingFailedMessage;
     private boolean codeNeeded;
@@ -133,6 +135,10 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
             hunt = null;
             remoteAssetCache = new RemoteAssetCache(this);
             remoteAssetCache.clear();
+
+            //TODO: clear customAssetCache only if the user wants to change to another hunt (not this custom hunt)
+            customAssetCache = new CustomAssetCache(this);
+            customAssetCache.clear();
 
             this.codeNeeded = true;
         }
@@ -279,6 +285,8 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
 
         ArrayList<TargetItem> targets = new ArrayList<TargetItem>();
         Map<String, String> urlMap = new HashMap<String, String>();
+        Map<String,String> customStartScreenData = new HashMap <String,String>();
+        Map<String, String> customAssetUrlMap = new HashMap<String, String>();
 
         for (KitIBeacon iBeacon : manager.getKit().getIBeacons()) {
             String huntId = iBeacon.getAttributes().get("hunt_id");
@@ -312,6 +320,39 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
                 String splashUrl = iBeacon.getAttributes().get("splash_url");
                 Log.e(TAG, "splashUrl = "+splashUrl);
 
+
+
+                //custom splash screen and instructions screen metadata
+
+                String instruction_background_color = iBeacon.getAttributes().get("instruction_background_color");
+
+
+                if (instruction_background_color != null){
+                    Log.d(TAG,"------This hunt has a custom instruction screen because the instruction_background_color is set to "+ instruction_background_color );
+                    //save custom splash screen and instructions screen for later use
+
+                    try {
+                        customStartScreenData.put("instruction_background_color", iBeacon.getAttributes().get("instruction_background_color"));
+                        customStartScreenData.put("instruction_image_url", iBeacon.getAttributes().get("instruction_image_url"));
+                        customStartScreenData.put("instruction_start_button_name", iBeacon.getAttributes().get("instruction_start_button_name"));
+                        customStartScreenData.put("instruction_text_1", iBeacon.getAttributes().get("instruction_text_1"));
+                        customStartScreenData.put("instruction_title", iBeacon.getAttributes().get("instruction_title"));
+                        customStartScreenData.put("splash_url", iBeacon.getAttributes().get("splash_url"));
+                        customStartScreenData.put("finish_background_color", iBeacon.getAttributes().get("finish_background_color"));
+                        customStartScreenData.put("finish_image_url", iBeacon.getAttributes().get("finish_image_url"));
+                        customStartScreenData.put("finish_button_name", iBeacon.getAttributes().get("finish_button_name"));
+                        customStartScreenData.put("finish_text_1", iBeacon.getAttributes().get("finish_text_1"));
+
+                        customAssetUrlMap.put("instruction_image", iBeacon.getAttributes().get("instruction_image_url"));
+                        customAssetUrlMap.put("finish_image", iBeacon.getAttributes().get("finish_image_url"));
+                        customAssetUrlMap.put("splash", iBeacon.getAttributes().get("splash_url"));
+
+
+                    }catch(Exception e){
+                        e.printStackTrace();
+                        customStartScreenData = null;}
+
+                }
             }
         }
 
@@ -341,12 +382,29 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
                 Log.d(TAG, "Target with hunt_id="+target.getId()+" is no longer in PK.  Target list has changed.");
             }
         }
+        if (customStartScreenData != null && customStartScreenData.equals(hunt.getCustomStartScreenData())){
+            targetListChanged = true;
+            Log.d(TAG, "customStartScreenData.equals(savedCustomData)");
+        } else{                Log.d(TAG, "customStartScreenData DOES NOT EQUAL savedCustomData"); }
+
         if (targetListChanged) {
             Log.w(TAG, "the targets in the hunt has changed from what we have in the settings.  starting over");
-            this.hunt = new Hunt(this,targets);
+            this.hunt = (customStartScreenData == null)? new Hunt(this,targets) : new Hunt(this,targets,customStartScreenData) ;
             this.hunt.saveToPreferences(this);
         }
 
+        customAssetCache = new CustomAssetCache(this);
+        customAssetCache.downloadCustomAssets(customAssetUrlMap, new AssetFetcherCallback() {
+            @Override
+            public void requestComplete() {
+                Log.i(TAG,"custom assets downloaded successfully");
+            }
+
+            @Override
+            public void requestFailed(Integer responseCode, Exception e) {
+                Log.e(TAG, "Failed to download the custom assets.");
+            }
+        });
         // After we have all our data from ProximityKit, we need to download the images and cache them
         // for display in the app.  We do this every time, so that the app can update the images after
         // later, and have users get the update if they restart the app.  This takes time, so if you
@@ -365,6 +423,8 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
             }
         });
     }
+
+
 
     @Override
     public void didFailSync(Exception e) {
@@ -431,6 +491,10 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         return remoteAssetCache;
     }
 
+    public CustomAssetCache getCustomAssetCache() {
+        return customAssetCache;
+    }
+
     // Checks to see that one found and one not found image has been downloaded for each target
     private boolean validateRequiredImagesPresent() {
         Log.d(TAG, "Validating required images are present");
@@ -451,13 +515,13 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
      */
     private void sendNotification() {
         try {
-        NotificationCompat.Builder builder =
-                new NotificationCompat.Builder(this)
-                        .setContentTitle(getString(R.string.sh_notification_title))
-                        .setContentText(getString(R.string.sh_notification_text))
-                        .setVibrate(VIBRATOR_PATTERN)
-                        .setSmallIcon(R.drawable.sh_notification_icon)
-                        .setAutoCancel(true);
+            NotificationCompat.Builder builder =
+                    new NotificationCompat.Builder(this)
+                            .setContentTitle(getString(R.string.sh_notification_title))
+                            .setContentText(getString(R.string.sh_notification_text))
+                            .setVibrate(VIBRATOR_PATTERN)
+                            .setSmallIcon(R.drawable.sh_notification_icon)
+                            .setAutoCancel(true);
 
 
             TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);

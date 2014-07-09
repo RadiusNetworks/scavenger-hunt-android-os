@@ -2,19 +2,18 @@ package com.radiusnetworks.scavengerhunt;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
-import android.preference.PreferenceManager;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.EditText;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import java.util.Map;
 
 
 /**
@@ -76,14 +75,39 @@ public class InstructionActivity extends Activity {
                 }
             });
         }
+
+        //setting custom logo
+        ImageView imageView =  (ImageView) this.findViewById(R.id.imageView);
+        Bitmap bitmap = application.getCustomAssetCache().getBitmapByName("instruction_image");
+        if (bitmap != null)
+            imageView.setImageBitmap(bitmap);
+        else Log.e(TAG, "custom splash image == null when pulled from file.");
+
+
+        //setting custom text and background color
+        Map<String,String> customStartScreenData = application.getHunt().getCustomStartScreenData();
+
+        String colorHex = application.getHunt().getCustomStartScreenData().get("instruction_background_color");
+        int color = Integer.parseInt(colorHex, 16);// parsing 0xD3D3D3
+        getWindow().getDecorView().setBackgroundColor(color);
+
+        ((TextView) this.findViewById(R.id.title1)).setText(customStartScreenData.get("instruction_title"));
+        ((TextView) this.findViewById(R.id.instructions)).setText(customStartScreenData.get("instruction_text_1"));
+        ((Button) this.findViewById(R.id.sh_instruction_button)).setText(customStartScreenData.get("instruction_start_button_name"));
+
     }
 
 
     private void triggerSplashAnimation(){
         //fading out splash screen
-        ImageView imageView = (ImageView) this.findViewById(R.id.splash);
+        ImageView splash = (ImageView) this.findViewById(R.id.splash);
+        Bitmap bitmap = application.getCustomAssetCache().getBitmapByName("splash");
+        if (bitmap != null)
+            splash.setImageBitmap(bitmap);
+        else Log.e(TAG, "custom splash image == null when pulled from file.");
+
         Animation fadeOut = AnimationUtils.loadAnimation(this, R.anim.fade_out);
-        imageView.startAnimation(fadeOut);
+        splash.startAnimation(fadeOut);
     }
 
     private void hideSplashImage() {

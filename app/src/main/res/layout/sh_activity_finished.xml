@@ -11,20 +11,26 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".MainActivity" >
 
-
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/imageView"
+        android:src="@drawable/bolt"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true" />
 
     <TextView
         android:id="@+id/sh_textView1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="15dp"
         android:text="@string/sh_activity_finished_tv_congratulations"
+        android:layout_below="@+id/imageView"
         android:textColor="#FFFFFF"
-        android:textSize="28dp"
+        android:gravity="center"
+        android:textSize="24dp"
         android:textStyle="bold" />
-
+<!--
     <TextView
         android:id="@+id/sh_textView2"
         android:layout_width="wrap_content"
@@ -35,12 +41,12 @@
         android:layout_below="@+id/sh_textView1"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="29dp" />
-
+-->
     <Button
         android:id="@+id/sh_redeem_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/sh_textView2"
+        android:layout_below="@+id/sh_textView1"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="42dp"
         android:onClick="onRedeemClicked"

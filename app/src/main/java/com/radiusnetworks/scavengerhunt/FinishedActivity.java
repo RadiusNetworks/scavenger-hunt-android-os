@@ -14,16 +14,21 @@
 package com.radiusnetworks.scavengerhunt;
 
 
-import android.os.Bundle;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.DialogInterface.OnClickListener;
 import android.content.pm.ActivityInfo;
-
+import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
+import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
+
+import java.util.Map;
 
 
 /**
@@ -43,6 +48,23 @@ public class FinishedActivity extends Activity  {
 		super.onCreate(savedInstanceState);
         application = (ScavengerHuntApplication) this.getApplication();
         setContentView(R.layout.sh_activity_finished);
+
+        //custom images
+        ImageView imageView =  (ImageView) this.findViewById(R.id.imageView);
+        Bitmap bitmap = application.getCustomAssetCache().getBitmapByName("finish_image");
+        if (bitmap != null)
+            imageView.setImageBitmap(bitmap);
+        else Log.e(TAG, "custom finished screen logo == null when pulled from file.");
+
+        //setting custom text and background color
+        Map<String,String> customStartScreenData = application.getHunt().getCustomStartScreenData();
+
+        String colorHex = application.getHunt().getCustomStartScreenData().get("finish_background_color");
+        getWindow().getDecorView().setBackgroundColor(Integer.parseInt(colorHex));
+
+        ((TextView) this.findViewById(R.id.sh_textView1)).setText(customStartScreenData.get("finish_text_1"));
+        ((Button) this.findViewById(R.id.sh_instruction_button)).setText(customStartScreenData.get("finish_button_name"));
+
 	}
 	
 	@Override
@@ -88,9 +110,15 @@ public class FinishedActivity extends Activity  {
 	}
 
 	public void onRedeemClicked(View view) {
-		setContentView(R.layout.sh_activity_redeemed);	    		
-		((TextView)findViewById(R.id.sh_redemption_text)).setText(
+		setContentView(R.layout.sh_activity_redeemed);
+
+        //setting custom background color
+        String colorHex = application.getHunt().getCustomStartScreenData().get("finish_background_color");
+        getWindow().getDecorView().setBackgroundColor(Integer.parseInt(colorHex));
+
+        ((TextView)findViewById(R.id.sh_redemption_text)).setText(
                 getString(R.string.sh_finishedactivity_tv_redemptiontext_replacement) + application.getHunt().getDeviceUuid());
+
 
 	}
 
