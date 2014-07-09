@@ -59,8 +59,11 @@ public class FinishedActivity extends Activity  {
         //setting custom text and background color
         Map<String,String> customStartScreenData = application.getHunt().getCustomStartScreenData();
 
+        //setting custom background color
         String colorHex = application.getHunt().getCustomStartScreenData().get("finish_background_color");
-        getWindow().getDecorView().setBackgroundColor(Integer.parseInt(colorHex));
+        colorHex = colorHex.replaceAll("0x", "#");
+        int color = Color.parseColor(colorHex);
+        getWindow().getDecorView().setBackgroundColor(color);
 
         ((TextView) this.findViewById(R.id.sh_textView1)).setText(customStartScreenData.get("finish_text_1"));
         ((Button) this.findViewById(R.id.sh_instruction_button)).setText(customStartScreenData.get("finish_button_name"));
