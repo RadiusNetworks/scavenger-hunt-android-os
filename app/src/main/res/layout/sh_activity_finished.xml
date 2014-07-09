@@ -30,7 +30,7 @@
         android:gravity="center"
         android:textSize="24dp"
         android:textStyle="bold" />
-<!--
+
     <TextView
         android:id="@+id/sh_textView2"
         android:layout_width="wrap_content"
@@ -41,15 +41,28 @@
         android:layout_below="@+id/sh_textView1"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="29dp" />
--->
+
+
+    <TextView
+        android:id="@+id/sh_redemption_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="24dp"
+        android:layout_below="@+id/sh_textView2"
+        android:gravity="center"
+        android:text="@string/sh_activity_redeemed_tv_redemptiontext"
+        android:textColor="#FFFFFF"
+        android:textSize="20dp" />
+
     <Button
         android:id="@+id/sh_redeem_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/sh_textView1"
+        android:layout_below="@+id/sh_redemption_text"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="42dp"
-        android:onClick="onRedeemClicked"
+        android:onClick="onFinishedClicked"
         android:text="@string/sh_activity_finished_button_redeem"
         android:textColor="#000000"
         style="@style/sh_custom_button" />

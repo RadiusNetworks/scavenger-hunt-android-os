@@ -49,6 +49,7 @@ public class FinishedActivity extends Activity  {
         application = (ScavengerHuntApplication) this.getApplication();
         setContentView(R.layout.sh_activity_finished);
 
+
         //custom images
         ImageView imageView =  (ImageView) this.findViewById(R.id.imageView);
         Bitmap bitmap = application.getCustomAssetCache().getBitmapByName("finish_image");
@@ -68,6 +69,10 @@ public class FinishedActivity extends Activity  {
         ((TextView) this.findViewById(R.id.sh_textView1)).setText(customStartScreenData.get("finish_text_1"));
         ((Button) this.findViewById(R.id.sh_redeem_button)).setText(customStartScreenData.get("finish_button_name"));
 
+        ((TextView)findViewById(R.id.sh_redemption_text)).setText(
+                getString(R.string.sh_finishedactivity_tv_redemptiontext_replacement) +
+                        application.getHunt().getDeviceUuid());
+
 	}
 	
 	@Override
@@ -85,10 +90,15 @@ public class FinishedActivity extends Activity  {
         }
 		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.sh_activity_finished);
+
+        ((TextView)findViewById(R.id.sh_redemption_text)).setText(
+                getString(R.string.sh_finishedactivity_tv_redemptiontext_replacement) +
+                        application.getHunt().getDeviceUuid());
+
     }
 	
 
-	public void onResetClicked(View view) {
+	public void onFinishedClicked(View view) {
 		final AlertDialog.Builder builder = new AlertDialog.Builder(this);
     	Hunt hunt = application.getHunt();
     	if (hunt.everythingFound()) {
@@ -111,21 +121,5 @@ public class FinishedActivity extends Activity  {
 		dialog.show();
 		
 	}
-
-	public void onRedeemClicked(View view) {
-		setContentView(R.layout.sh_activity_redeemed);
-
-        //setting custom background color
-        String colorHex = application.getHunt().getCustomStartScreenData().get("finish_background_color");
-        colorHex = colorHex.replaceAll("0x", "#");
-        int color = Color.parseColor(colorHex);
-        getWindow().getDecorView().setBackgroundColor(color);
-
-        ((TextView)findViewById(R.id.sh_redemption_text)).setText(
-                getString(R.string.sh_finishedactivity_tv_redemptiontext_replacement) + application.getHunt().getDeviceUuid());
-
-
-	}
-
 	
 }
