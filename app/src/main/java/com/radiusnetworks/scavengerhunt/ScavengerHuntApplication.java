@@ -64,13 +64,6 @@ import java.util.Set;
  */
 
 
-/*
-TODO:
-
-1. Test on tablet
-2. Test with PK code
- */
-
 public class ScavengerHuntApplication extends Application implements ProximityKitNotifier {
 
     private static final String TAG = "ScavengerHuntApplication";
@@ -121,8 +114,24 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         }
     }
 
-    public void startOver(Activity activity) {
+    public void startOver(Activity activity, boolean forceCodeReentry) {
         if (!new PropertiesFile().exists()) {
+        }
+        else {
+            Log.d(TAG, "starting over");
+            hunt.reset();
+            hunt.saveToPreferences(this);
+        }
+
+        cancelAllNotifications();
+
+        if (this.collectionActivity != null) {
+            this.collectionActivity.finish();  // do this so it won't show up again on back press
+        }
+
+        Intent intent;
+        if (forceCodeReentry) {
+            this.codeNeeded = true;
             Log.d(TAG, "clearing shared preferences");
             SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
             String code = settings.getString("code", null);
@@ -134,22 +143,14 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
             remoteAssetCache = new RemoteAssetCache(this);
             remoteAssetCache.clear();
 
-            this.codeNeeded = true;
+            intent = new Intent(activity, LoadingActivity.class);
         }
         else {
-            Log.d(TAG, "starting over");
             hunt.reset();
-            hunt.saveToPreferences(this);
+            intent = new Intent(activity, TargetCollectionActivity.class);
         }
-
-        cancelAllNotifications();
-
-        Intent i = new Intent(activity, LoadingActivity.class);
-        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        startActivity(i);
-        if (this.collectionActivity != null) {
-            this.collectionActivity.finish();  // do this so it won't show up again on back press
-        }
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
     }
 
     public void setLoadingActivity(LoadingActivity activity) {

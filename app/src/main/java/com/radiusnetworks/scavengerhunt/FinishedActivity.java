@@ -78,7 +78,7 @@ public class FinishedActivity extends Activity  {
 		builder.setNegativeButton(android.R.string.ok, new OnClickListener() {
 			@Override
 			public void onClick(DialogInterface arg0, int arg1) {
-                application.startOver(FinishedActivity.this);
+                application.startOver(FinishedActivity.this, false);
 			}
 			
 		});

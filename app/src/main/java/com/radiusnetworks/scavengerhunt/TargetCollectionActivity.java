@@ -76,7 +76,25 @@ public class TargetCollectionActivity extends Activity  {
                 builder.setNegativeButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface arg0, int arg1) {
-                        application.startOver(TargetCollectionActivity.this);
+                        final AlertDialog.Builder builder2 = new AlertDialog.Builder(TargetCollectionActivity.this);
+                        builder.setTitle("Restart the same scavenger hunt?");	// Are you sure you are finished?  You will not be allowed to return to this page
+                        builder.setMessage("Selecting different will require entering a new code.");
+                        builder.setPositiveButton("Same", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface arg0, int arg1) {
+                                application.startOver(TargetCollectionActivity.this, false /*no new code needed */);
+                            }
+
+                        });
+                        builder.setNegativeButton("Different", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface arg0, int arg1) {
+                                application.startOver(TargetCollectionActivity.this, true /* force code re-entry */);
+                            }
+
+                        });
+                        AlertDialog dialog = builder.create();
+                        dialog.show();
                     }
 
                 });
