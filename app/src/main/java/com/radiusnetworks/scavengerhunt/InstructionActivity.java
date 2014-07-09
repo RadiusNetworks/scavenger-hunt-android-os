@@ -3,6 +3,7 @@ package com.radiusnetworks.scavengerhunt;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -88,7 +89,8 @@ public class InstructionActivity extends Activity {
         Map<String,String> customStartScreenData = application.getHunt().getCustomStartScreenData();
 
         String colorHex = application.getHunt().getCustomStartScreenData().get("instruction_background_color");
-        int color = Integer.parseInt(colorHex, 16);// parsing 0xD3D3D3
+        colorHex = colorHex.replaceAll("0x", "#");
+        int color = Color.parseColor(colorHex);
         getWindow().getDecorView().setBackgroundColor(color);
 
         ((TextView) this.findViewById(R.id.title1)).setText(customStartScreenData.get("instruction_title"));
