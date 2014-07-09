@@ -114,7 +114,9 @@ public class FinishedActivity extends Activity  {
 
         //setting custom background color
         String colorHex = application.getHunt().getCustomStartScreenData().get("finish_background_color");
-        getWindow().getDecorView().setBackgroundColor(Integer.parseInt(colorHex));
+        colorHex = colorHex.replaceAll("0x", "#");
+        int color = Color.parseColor(colorHex);
+        getWindow().getDecorView().setBackgroundColor(color);
 
         ((TextView)findViewById(R.id.sh_redemption_text)).setText(
                 getString(R.string.sh_finishedactivity_tv_redemptiontext_replacement) + application.getHunt().getDeviceUuid());
