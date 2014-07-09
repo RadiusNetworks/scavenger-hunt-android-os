@@ -33,6 +33,6 @@
         android:layout_marginTop="14dp"
         android:onClick="onResetClicked"
         android:text="@string/sh_activity_redeemed_button_finish"
-        android:textColor="#3abeee" />
+        android:textColor="#000000" />
 
 </RelativeLayout>

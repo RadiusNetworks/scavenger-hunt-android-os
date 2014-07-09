@@ -51,7 +51,7 @@
         android:layout_marginTop="42dp"
         android:onClick="onRedeemClicked"
         android:text="@string/sh_activity_finished_button_redeem"
-        android:textColor="#3dbeee"
+        android:textColor="#000000"
         style="@style/sh_custom_button" />
 
 </RelativeLayout>

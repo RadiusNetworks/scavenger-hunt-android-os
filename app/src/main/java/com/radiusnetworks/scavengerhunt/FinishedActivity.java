@@ -66,7 +66,7 @@ public class FinishedActivity extends Activity  {
         getWindow().getDecorView().setBackgroundColor(color);
 
         ((TextView) this.findViewById(R.id.sh_textView1)).setText(customStartScreenData.get("finish_text_1"));
-        ((Button) this.findViewById(R.id.sh_instruction_button)).setText(customStartScreenData.get("finish_button_name"));
+        ((Button) this.findViewById(R.id.sh_redeem_button)).setText(customStartScreenData.get("finish_button_name"));
 
 	}
 	
