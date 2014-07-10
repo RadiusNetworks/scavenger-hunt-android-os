@@ -64,13 +64,6 @@ import java.util.Map;
  */
 
 
-/*
-TODO:
-
-1. Test on tablet
-2. Test with PK code
- */
-
 public class ScavengerHuntApplication extends Application implements ProximityKitNotifier {
 
     private static final String TAG = "ScavengerHuntApplication";
@@ -90,6 +83,7 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
     private String loadingFailedTitle;
     private String loadingFailedMessage;
     private boolean codeNeeded;
+    private boolean ignoreSync = true;
     int startCount = 0;
 
     @Override
@@ -113,18 +107,49 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         }
     }
 
-    public void startPk(String code) {
+    public void startPk(String code, boolean resume) {
         Log.d(TAG, "startPk called with code "+code );
+
         if (code != null) {
+            if (resume) {
+              ignoreSync = true;
+            }
+            else {
+                ignoreSync = false;
+            }
             manager.restart(code);
         }
         else {
+            ignoreSync = false;
             manager.start(); // This starts ranging and monitoring for iBeacons defined in ProximityKit\
         }
     }
+    public boolean canResume() {
+        hunt = Hunt.loadFromPreferences(this);
+        remoteAssetCache = new RemoteAssetCache(this);
+        Log.d(TAG, "hunt loaded from preferences at boot: "+hunt);
+        return (hunt!= null && hunt.getTargetList().size() > 0 && validateRequiredImagesPresent());
+    }
 
-    public void startOver(Activity activity) {
+    public void startOver(Activity activity, boolean forceCodeReentry) {
         if (!new PropertiesFile().exists()) {
+        }
+        else {
+            Log.d(TAG, "starting over");
+            hunt.reset();
+            hunt.saveToPreferences(this);
+        }
+
+        cancelAllNotifications();
+
+        if (this.collectionActivity != null) {
+            this.collectionActivity.finish();  // do this so it won't show up again on back press
+            this.collectionActivity = null;
+        }
+
+        Intent intent;
+        if (forceCodeReentry) {
+            this.codeNeeded = true;
             Log.d(TAG, "clearing shared preferences");
             SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
             String code = settings.getString("code", null);
@@ -135,27 +160,18 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
             hunt = null;
             remoteAssetCache = new RemoteAssetCache(this);
             remoteAssetCache.clear();
-
-            //TODO: clear customAssetCache only if the user wants to change to another hunt (not this custom hunt)
             customAssetCache = new CustomAssetCache(this);
             customAssetCache.clear();
-
             this.codeNeeded = true;
+            intent = new Intent(activity, LoadingActivity.class);
         }
         else {
-            Log.d(TAG, "starting over");
             hunt.reset();
-            hunt.saveToPreferences(this);
+            hunt.start();
+            intent = new Intent(activity, TargetCollectionActivity.class);
         }
-
-        cancelAllNotifications();
-
-        Intent i = new Intent(activity, LoadingActivity.class);
-        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        startActivity(i);
-        if (this.collectionActivity != null) {
-            this.collectionActivity.finish();  // do this so it won't show up again on back press
-        }
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
     }
 
     public void setLoadingActivity(LoadingActivity activity) {
@@ -282,6 +298,11 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
     public void didSync() {
         // Called when ProximityKit data are updated from the server
         Log.d(TAG, "proximityKit didSync.  kit is " + manager.getKit());
+        if (ignoreSync) {
+            Log.d(TAG, "ignoring sync");
+            return;
+        }
+        ignoreSync = true;
 
         ArrayList<TargetItem> targets = new ArrayList<TargetItem>();
         Map<String, String> urlMap = new HashMap<String, String>();

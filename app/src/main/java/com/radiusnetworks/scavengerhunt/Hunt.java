@@ -79,6 +79,7 @@ public class Hunt {
         while (i.hasNext()) {
             TargetItem target = i.next();
             target.setFound(false);
+            target.setTimeNotifLastSent(0l);
         }
     }
 
@@ -214,23 +215,39 @@ public class Hunt {
 
     public static Hunt loadFromPreferences(Context context) {
         Hunt hunt = new Hunt();
+        hunt.targetList = new ArrayList<TargetItem>();
+
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
         hunt.startTime = settings.getLong("sh_start_time", hunt.startTime);
         hunt.deviceUuid = settings.getString("sh_device_uuid", hunt.deviceUuid == null ? java.util.UUID.randomUUID().toString() : hunt.deviceUuid);
 
         String targetIdsFound = settings.getString("sh_target_ids_found", "");
         String targetIds = settings.getString("sh_target_ids", "");
+        if (targetIds.equals("")) {
+            Log.d(TAG, "there are no target ids in preferences, so we will not consider the hunt to exist");
+        }
         String targetTitles = settings.getString("sh_target_titles", "");
         String targetDescriptions = settings.getString("sh_target_descriptions", "");
         List<String> foundTargetIdList = Arrays.asList(targetIdsFound.split(","));
         Log.d(TAG, "device uuid is "+hunt.deviceUuid);
 
         hunt.targetList = new ArrayList<TargetItem>();
-        String[] titlesStrings = targetTitles.split("|");
-        String[] descriptionsStrings = targetDescriptions.split("|");
+        String[] titlesStrings = targetTitles.split("\\|");
+        String[] descriptionsStrings = targetDescriptions.split("\\|");
         int i = 0;
-        for (String targetId : targetIds.split("|")) {
-            hunt.targetList.add(new TargetItem(targetId, titlesStrings[i], descriptionsStrings[i]));
+        Log.d(TAG, "targetIds:"+targetIds);
+        for (String targetId : targetIds.split("\\|")) {
+            Log.d(TAG, "processing targetId: "+targetId);
+            String title = null;
+            String description = null;
+            if (titlesStrings.length > i) {
+                title = titlesStrings[i];
+            }
+            if (descriptionsStrings.length > i) {
+                description = descriptionsStrings[i];
+            }
+
+            hunt.targetList.add(new TargetItem(targetId, title, description));
             i++;
         }
 
