@@ -83,6 +83,7 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
     private String loadingFailedTitle;
     private String loadingFailedMessage;
     private boolean codeNeeded;
+    private boolean ignoreSync = true;
     int startCount = 0;
 
     @Override
@@ -106,14 +107,28 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         }
     }
 
-    public void startPk(String code) {
+    public void startPk(String code, boolean resume) {
         Log.d(TAG, "startPk called with code "+code );
+
         if (code != null) {
+            if (resume) {
+              ignoreSync = true;
+            }
+            else {
+                ignoreSync = false;
+            }
             manager.restart(code);
         }
         else {
+            ignoreSync = false;
             manager.start(); // This starts ranging and monitoring for iBeacons defined in ProximityKit\
         }
+    }
+    public boolean canResume() {
+        hunt = Hunt.loadFromPreferences(this);
+        remoteAssetCache = new RemoteAssetCache(this);
+        Log.d(TAG, "hunt loaded from preferences at boot: "+hunt);
+        return (hunt!= null && hunt.getTargetList().size() > 0 && validateRequiredImagesPresent());
     }
 
     public void startOver(Activity activity, boolean forceCodeReentry) {
@@ -129,6 +144,7 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
 
         if (this.collectionActivity != null) {
             this.collectionActivity.finish();  // do this so it won't show up again on back press
+            this.collectionActivity = null;
         }
 
         Intent intent;
@@ -144,15 +160,14 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
             hunt = null;
             remoteAssetCache = new RemoteAssetCache(this);
             remoteAssetCache.clear();
-
             customAssetCache = new CustomAssetCache(this);
             customAssetCache.clear();
-
             this.codeNeeded = true;
             intent = new Intent(activity, LoadingActivity.class);
         }
         else {
             hunt.reset();
+            hunt.start();
             intent = new Intent(activity, TargetCollectionActivity.class);
         }
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -283,6 +298,11 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
     public void didSync() {
         // Called when ProximityKit data are updated from the server
         Log.d(TAG, "proximityKit didSync.  kit is " + manager.getKit());
+        if (ignoreSync) {
+            Log.d(TAG, "ignoring sync");
+            return;
+        }
+        ignoreSync = true;
 
         ArrayList<TargetItem> targets = new ArrayList<TargetItem>();
         Map<String, String> urlMap = new HashMap<String, String>();

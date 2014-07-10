@@ -113,8 +113,8 @@ public class FinishedActivity extends Activity  {
                 application.startOver(FinishedActivity.this, false);
                 //closing FinishedActivity to prevent coming back here if back button is pressed on next screen
                 FinishedActivity.this.finish();
-				}
-			
+			}
+
 		});
 		AlertDialog dialog = builder.create();
 		dialog.show();
