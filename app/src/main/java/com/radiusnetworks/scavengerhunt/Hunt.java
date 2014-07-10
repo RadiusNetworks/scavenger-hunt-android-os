@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -210,6 +211,21 @@ public class Hunt {
         editor.putString("sh_target_titles", getTargetTitles());
         editor.putString("sh_target_descriptions", getTargetDescriptions());
 
+        if (hasCustomStartScreen()){
+            editor.putString("instruction_background_color", this.customStartScreenData.get("instruction_background_color"));
+            editor.putString("instruction_image_url", this.customStartScreenData.get("instruction_image_url"));
+            editor.putString("instruction_start_button_name", this.customStartScreenData.get("instruction_start_button_name"));
+            editor.putString("instruction_text_1", this.customStartScreenData.get("instruction_text_1"));
+            editor.putString("instruction_title", this.customStartScreenData.get("instruction_title"));
+            editor.putString("splash_url", this.customStartScreenData.get("splash_url"));
+            editor.putString("finish_background_color", this.customStartScreenData.get("finish_background_color"));
+            editor.putString("finish_image_url", this.customStartScreenData.get("finish_image_url"));
+            editor.putString("finish_button_name", this.customStartScreenData.get("finish_button_name"));
+            editor.putString("finish_text_1", this.customStartScreenData.get("finish_text_1"));
+
+            //note images should already be saved to file
+        }
+
         editor.commit();
     }
 
@@ -259,6 +275,24 @@ public class Hunt {
                 }
             }
         }
+
+
+        Map<String,String> loadedCustomData = new HashMap<String, String>();
+        loadedCustomData.put("instruction_background_color",settings.getString("instruction_background_color",""));
+        loadedCustomData.put("instruction_image_url",settings.getString("instruction_image_url",""));
+        loadedCustomData.put("instruction_start_button_name",settings.getString("instruction_start_button_name",""));
+        loadedCustomData.put("instruction_text_1",settings.getString("instruction_text_1",""));
+        loadedCustomData.put("instruction_title",settings.getString("instruction_title",""));
+        loadedCustomData.put("splash_url",settings.getString("splash_url",""));
+        loadedCustomData.put("finish_background_color",settings.getString("finish_background_color",""));
+        loadedCustomData.put("finish_image_url",settings.getString("finish_image_url",""));
+        loadedCustomData.put("finish_button_name",settings.getString("finish_button_name",""));
+        loadedCustomData.put("finish_text_1",settings.getString("finish_text_1",""));
+        //Note: custom images should already be saved to file, and will be loaded when needed
+
+        if (loadedCustomData.get("instruction_background_color") != "")
+            hunt.setCustomStartScreenData(loadedCustomData);
+
         return hunt;
     }
 
