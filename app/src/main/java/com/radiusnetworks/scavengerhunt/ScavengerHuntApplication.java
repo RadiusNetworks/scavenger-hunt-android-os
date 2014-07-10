@@ -136,13 +136,13 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
     }
 
     public void startOver(Activity activity, boolean forceCodeReentry) {
-        if (!new PropertiesFile().exists()) {
-        }
-        else {
+        if (hunt != null) {
+            hunt.reset();
+            hunt.saveToPreferences(this);
         }
         Log.i(TAG, "starting over");
-        hunt.reset();
-        hunt.saveToPreferences(this);
+
+
 
         cancelAllNotifications();
 
