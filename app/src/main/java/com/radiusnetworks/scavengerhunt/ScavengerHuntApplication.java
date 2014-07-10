@@ -97,6 +97,8 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         // Include IBeacon logs and shorten background polling
         manager.getIBeaconManager().setDebug(true);
         manager.getIBeaconManager().setBackgroundBetweenScanPeriod(30000);
+        remoteAssetCache = new RemoteAssetCache(this);
+        customAssetCache = new CustomAssetCache(this);
 
         if (!new PropertiesFile().exists()) {
             this.codeNeeded = true;
@@ -169,6 +171,8 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
             customAssetCache.clear();
             this.codeNeeded = true;
             intent = new Intent(activity, LoadingActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
         }
         else {
             hunt.reset();
@@ -176,8 +180,6 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
             this.collectionActivity.recreate();
             //intent = new Intent(activity, TargetCollectionActivity.class);//InstructionActivity.class);
         }
-     //   intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-     //   startActivity(intent);
     }
 
     public void setLoadingActivity(LoadingActivity activity) {
