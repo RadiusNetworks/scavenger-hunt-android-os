@@ -134,13 +134,13 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
     }
 
     public void startOver(Activity activity, boolean forceCodeReentry) {
-        if (!new PropertiesFile().exists()) {
-        }
-        else {
+        if (hunt != null) {
+            hunt.reset();
+            hunt.saveToPreferences(this);
         }
         Log.i(TAG, "starting over");
-        hunt.reset();
-        hunt.saveToPreferences(this);
+
+
 
         cancelAllNotifications();
 
@@ -169,6 +169,8 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
             customAssetCache.clear();
             this.codeNeeded = true;
             intent = new Intent(activity, LoadingActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
         }
         else {
             hunt.reset();
@@ -176,8 +178,7 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
             this.collectionActivity.recreate();
             //intent = new Intent(activity, TargetCollectionActivity.class);//InstructionActivity.class);
         }
-     //   intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-     //   startActivity(intent);
+
     }
 
     public void setLoadingActivity(LoadingActivity activity) {

@@ -110,7 +110,7 @@ public class FinishedActivity extends Activity  {
 		builder.setNegativeButton(android.R.string.ok, new OnClickListener() {
 			@Override
 			public void onClick(DialogInterface arg0, int arg1) {
-                application.startOver(FinishedActivity.this, false);
+                application.startOver(FinishedActivity.this, true);
                 //closing FinishedActivity to prevent coming back here if back button is pressed on next screen
                 FinishedActivity.this.finish();
 			}
