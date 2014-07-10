@@ -126,6 +126,7 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
     }
     public boolean canResume() {
         hunt = Hunt.loadFromPreferences(this);
+
         remoteAssetCache = new RemoteAssetCache(this);
         Log.d(TAG, "hunt loaded from preferences at boot: "+hunt);
         return (hunt!= null && hunt.getTargetList().size() > 0 && validateRequiredImagesPresent());
@@ -449,6 +450,12 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
 
     @Override
     public void didFailSync(Exception e) {
+        Log.w(TAG, "proximityKit didFailSync");
+        if (ignoreSync) {
+            Log.d(TAG, "ignoring sync");
+            return;
+        }
+        ignoreSync = true;
         // called when ProximityKit data are requested from the server, but the request fails
         if (loadingActivity != null && loadingActivity.isValidatingCode()) {
             Log.w(TAG, "proximityKit didFailSync due to " + e + "  bad code entered?");

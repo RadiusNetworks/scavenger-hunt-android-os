@@ -21,15 +21,18 @@ public class DummyInitialActivity extends android.app.Activity {
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
         String code = settings.getString("code", null);
         // If we have everything we need to resume, just do so
-        if (application.canResume()) {
+        if (application.canResume() && code != null) {
             Log.d(TAG, "**** RESUMING FROM WHERE WE LEFT OFF");
 
             application.getHunt().start();
+            application.startPk(code, true); // resume with the last code
             Intent i;
             if (application.getHunt().hasCustomStartScreen()) {
+                Log.d(TAG, "this does not have a custom start screen");
                 i = new Intent(this, InstructionActivity.class);
             }
             else {
+                Log.d(TAG, "this has a custom start screen");
                 i = new Intent(this, TargetCollectionActivity.class);
             }
 
