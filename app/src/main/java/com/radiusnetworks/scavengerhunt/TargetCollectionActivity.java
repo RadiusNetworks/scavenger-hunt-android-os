@@ -44,6 +44,7 @@ public class TargetCollectionActivity extends Activity  {
 	private BaseAdapter adapter = null;
 	private IBeaconManager iBeaconService = IBeaconManager.getInstanceForApplication(this);
     private ScavengerHuntApplication application;
+    private boolean reconfigureNeeded = false;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -52,18 +53,8 @@ public class TargetCollectionActivity extends Activity  {
         application = (ScavengerHuntApplication) this.getApplication();
 
 		setContentView(R.layout.sh_activity_target_collection);
-		gridView = (GridView) findViewById(R.id.sh_grid_view);
 
-        Log.d(TAG, "getting image");
-        ImageView view = application.getRemoteAssetCache().getImageByName("target1");
-
-		adapter = new TargetImageCollectionAdapter(this);
-		gridView.setAdapter(adapter);
-		
-		gridView.setOnItemClickListener(itemClickListener);
-
-        application.setCollectionActivity(this);
-        application.getHunt().sortTargetList();
+        reconfigureView();
 
         View button = (TextView) this.findViewById(R.id.start_over_button);
         button.setOnClickListener( new View.OnClickListener() {
@@ -104,6 +95,21 @@ public class TargetCollectionActivity extends Activity  {
         });
 	}
 
+    private void reconfigureView() {
+        Log.d(TAG, "in reconfigure view");
+        gridView = (GridView) findViewById(R.id.sh_grid_view);
+        adapter = new TargetImageCollectionAdapter(this);
+        gridView.setAdapter(adapter);
+        gridView.setOnItemClickListener(itemClickListener);
+        application.setCollectionActivity(this);
+        application.getHunt().sortTargetList();
+        adapter.notifyDataSetChanged();
+        gridView.invalidateViews();
+    }
+
+    public void forceReconfigure() {
+        reconfigureNeeded = true;    }
+
 	@Override
     public void onBackPressed() {
         finish();
@@ -113,6 +119,10 @@ public class TargetCollectionActivity extends Activity  {
 	protected void onResume() {
 		super.onResume();
 		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        if (reconfigureNeeded) {
+            reconfigureView();
+            reconfigureNeeded = false;
+        }
 	}
 	@Override 
 	protected void onDestroy() {

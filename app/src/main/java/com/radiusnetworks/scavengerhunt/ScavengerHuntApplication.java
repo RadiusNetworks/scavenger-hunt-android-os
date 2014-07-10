@@ -117,6 +117,7 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
             else {
                 ignoreSync = false;
             }
+            Log.d(TAG, "restarting PK with code: "+code);
             manager.restart(code);
         }
         else {
@@ -136,14 +137,17 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         if (!new PropertiesFile().exists()) {
         }
         else {
-            Log.d(TAG, "starting over");
-            hunt.reset();
-            hunt.saveToPreferences(this);
         }
+        Log.d(TAG, "starting over");
+        hunt.reset();
+        hunt.saveToPreferences(this);
 
         cancelAllNotifications();
 
         if (this.collectionActivity != null) {
+            Log.d(TAG, "calling finish on "+this.collectionActivity);
+            //not sure this is reliable
+            this.collectionActivity.forceReconfigure();
             this.collectionActivity.finish();  // do this so it won't show up again on back press
             this.collectionActivity = null;
         }
@@ -265,9 +269,18 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
                         startActivity(i);
                     }
                 }
+                else {
+                    Log.d(TAG, "null collection activity");
+                }
+
             }
             else {
-                Log.d(TAG, "null collection activity");
+                if (target.isFound()) {
+                    Log.d(TAG, "Not marking this target as found because it is already found");
+                }
+                else if (iBeacon.getAccuracy() < triggerDistanceMeters) {
+                    Log.d(TAG, "Not marking this target as found becasue it isn't close enough.  it needs to be under "+triggerDistanceMeters+" but is "+iBeacon.getAccuracy());
+                }
             }
         } else {
             Log.d(TAG, "hunt hasn't started, so all ibeacon detections are being ignored");
