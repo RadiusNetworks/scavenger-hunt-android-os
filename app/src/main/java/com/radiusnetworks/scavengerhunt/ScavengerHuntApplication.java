@@ -138,18 +138,18 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         }
         else {
         }
-        Log.d(TAG, "starting over");
+        Log.i(TAG, "starting over");
         hunt.reset();
         hunt.saveToPreferences(this);
 
         cancelAllNotifications();
 
         if (this.collectionActivity != null) {
-            Log.d(TAG, "calling finish on "+this.collectionActivity);
+            Log.i(TAG, "calling finish on "+this.collectionActivity);
             //not sure this is reliable
             this.collectionActivity.forceReconfigure();
-            this.collectionActivity.finish();  // do this so it won't show up again on back press
-            this.collectionActivity = null;
+        //    this.collectionActivity.finish();  // do this so it won't show up again on back press
+         //   this.collectionActivity = null;
         }
 
         Intent intent;
@@ -173,10 +173,11 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         else {
             hunt.reset();
             hunt.start();
-            intent = new Intent(activity, TargetCollectionActivity.class);
+            this.collectionActivity.recreate();
+            //intent = new Intent(activity, TargetCollectionActivity.class);//InstructionActivity.class);
         }
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        startActivity(intent);
+     //   intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+     //   startActivity(intent);
     }
 
     public void setLoadingActivity(LoadingActivity activity) {
@@ -215,7 +216,7 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
     @Override
     public void iBeaconDataUpdate(IBeacon iBeacon, IBeaconData iBeaconData, DataProviderException e) {
         // Called every second with data from ProximityKit when an iBeacon defined in ProximityKit is nearby
-        Log.d(TAG, "iBeaconDataUpdate: " + iBeacon.getProximityUuid() + " " + iBeacon.getMajor() + " " + iBeacon.getMinor());
+        Log.i(TAG, "iBeaconDataUpdate: " + iBeacon.getProximityUuid() + " " + iBeacon.getMajor() + " " + iBeacon.getMinor());
         String huntId = null;
         Double triggerDistanceMeters = MINIMUM_TRIGGER_DISTANCE_METERS;
         if (iBeaconData != null) {
@@ -249,13 +250,13 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
             // Logic to determine when a local notification will be sent
             if ((currentTimeMsecs - timeTargetNotifLastSent) > REPEAT_NOTIF_RESTRICTED_PERIOD_MSECS
                     && hunt.allowNotification() && (isApplicationSentToBackground(this.getApplicationContext())) && !target.isFound()) {
-                Log.d(TAG, "Sending notification");
+                Log.i(TAG, "Sending notification");
                 sendNotification();
                 target.setTimeNotifLastSent(currentTimeMsecs);
             }
 
             if (iBeacon.getAccuracy() < triggerDistanceMeters && !target.isFound()) {
-                Log.d(TAG, "Found an item. iBeacon.getAccuracy(): " + iBeacon.getAccuracy());
+                Log.i(TAG, "Found an item. iBeacon.getAccuracy(): " + iBeacon.getAccuracy());
                 target.setFound(true);
                 hunt.saveToPreferences(this);
                 if (collectionActivity != null) {
@@ -270,7 +271,7 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
                     }
                 }
                 else {
-                    Log.d(TAG, "null collection activity");
+                    Log.i(TAG, "null collection activity");
                 }
 
             }
