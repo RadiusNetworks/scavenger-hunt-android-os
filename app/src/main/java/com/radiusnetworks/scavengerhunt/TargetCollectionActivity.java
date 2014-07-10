@@ -112,7 +112,7 @@ public class TargetCollectionActivity extends Activity  {
 
 	@Override
     public void onBackPressed() {
-        finish();
+        moveTaskToBack(true);
     }
 
 	@Override
