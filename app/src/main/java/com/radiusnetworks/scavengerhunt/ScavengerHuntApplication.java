@@ -95,8 +95,9 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         manager.setNotifier(this);
 
         // Include IBeacon logs and shorten background polling
-        manager.getIBeaconManager().setDebug(true);
-        manager.getIBeaconManager().setBackgroundBetweenScanPeriod(30000);
+        //manager.getIBeaconManager().setDebug(true);
+        //manager.getIBeaconManager().setBackgroundBetweenScanPeriod(30000);
+        
         remoteAssetCache = new RemoteAssetCache(this);
         customAssetCache = new CustomAssetCache(this);
 
