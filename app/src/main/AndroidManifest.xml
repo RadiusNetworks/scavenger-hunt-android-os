@@ -5,8 +5,9 @@
     android:versionName="1.1" >
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.GET_TASKS"/>  <!-- needed to see if app is running in background -->
     <application
-        android:debuggable="false"
+        android:debuggable="true"
         android:name="com.radiusnetworks.scavengerhunt.ScavengerHuntApplication"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"

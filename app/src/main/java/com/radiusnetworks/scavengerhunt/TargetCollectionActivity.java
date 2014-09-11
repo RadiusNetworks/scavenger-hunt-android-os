@@ -111,6 +111,8 @@ public class TargetCollectionActivity extends Activity  {
 			TargetItem target = application.getHunt().getTargetList().get(position);
 
             i.putExtra("hunt_id", target.getId());
+            i.putExtra("title", target.getTitle());
+            i.putExtra("description", target.getDescription());
 		    startActivity(i);
 	    }
 	};

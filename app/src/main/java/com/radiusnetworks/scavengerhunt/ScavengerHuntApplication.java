@@ -14,14 +14,15 @@
 package com.radiusnetworks.scavengerhunt;
 
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.Application;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.TaskStackBuilder;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.DropBoxManager;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
@@ -40,10 +41,8 @@ import com.radiusnetworks.scavengerhunt.assets.RemoteAssetCache;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Created by dyoung on 1/24/14.
@@ -99,8 +98,8 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         manager.setNotifier(this);
 
         // Include IBeacon logs and shorten background polling
-        //manager.getIBeaconManager().setDebug(true);
-        //manager.getIBeaconManager().setBackgroundBetweenScanPeriod(30000);
+        manager.getIBeaconManager().setDebug(true);
+        manager.getIBeaconManager().setBackgroundBetweenScanPeriod(30000);
 
         if (!new PropertiesFile().exists()) {
             this.codeNeeded = true;
@@ -186,9 +185,15 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         // Called every second with data from ProximityKit when an iBeacon defined in ProximityKit is nearby
         Log.d(TAG, "iBeaconDataUpdate: " + iBeacon.getProximityUuid() + " " + iBeacon.getMajor() + " " + iBeacon.getMinor());
         String huntId = null;
+        Double triggerDistanceMeters = MINIMUM_TRIGGER_DISTANCE_METERS;
         if (iBeaconData != null) {
             huntId = iBeaconData.get("hunt_id");
+            if (iBeaconData.get("trigger_distance")!= null) {
+                triggerDistanceMeters = Double.parseDouble(iBeaconData.get("trigger_distance"));
+            }
         }
+
+
         if (huntId == null) {
             Log.d(TAG, "The iBeacon I just saw is not part of the scavenger hunt, according to ProximityKit");
             return;
@@ -210,13 +215,14 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
             long currentTimeMsecs = System.currentTimeMillis();
 
             // Logic to determine when a local notification will be sent
-            if ((currentTimeMsecs - timeTargetNotifLastSent) > REPEAT_NOTIF_RESTRICTED_PERIOD_MSECS && hunt.allowNotification() && !target.isFound()) {
+            if ((currentTimeMsecs - timeTargetNotifLastSent) > REPEAT_NOTIF_RESTRICTED_PERIOD_MSECS
+                    && hunt.allowNotification() && (isApplicationSentToBackground(this.getApplicationContext())) && !target.isFound()) {
                 Log.d(TAG, "Sending notification");
                 sendNotification();
                 target.setTimeNotifLastSent(currentTimeMsecs);
             }
 
-            if (iBeacon.getAccuracy() < MINIMUM_TRIGGER_DISTANCE_METERS && !target.isFound()) {
+            if (iBeacon.getAccuracy() < triggerDistanceMeters && !target.isFound()) {
                 Log.d(TAG, "Found an item. iBeacon.getAccuracy(): " + iBeacon.getAccuracy());
                 target.setFound(true);
                 hunt.saveToPreferences(this);
@@ -273,6 +279,19 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
             String huntId = iBeacon.getAttributes().get("hunt_id");
             if (huntId != null) {
                 TargetItem target = new TargetItem(huntId);
+
+                String title = iBeacon.getAttributes().get("title");
+                if (title != null) {
+                    target.setTitle(title);
+                    Log.d(TAG, "title = "+title);
+                } else {                     Log.d(TAG, "title = null");}
+
+                String description = iBeacon.getAttributes().get("description");
+                if (description != null) {
+                    target.setDescription(description);
+                    Log.d(TAG, "description = "+description);
+                } else {                     Log.d(TAG, "description = null");}
+
                 targets.add(target);
                 String imageUrl = iBeacon.getAttributes().get("image_url");
                 if (imageUrl == null) {
@@ -421,32 +440,43 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
      Sends a notification to the user when a scavenger hunt beacon is nearby.
      */
     private void sendNotification() {
+        try {
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(this)
-                        .setContentTitle("Scavenger Hunt")
-                        .setContentText("A scavenger hunt location is nearby.")
+                        .setContentTitle(getString(R.string.sh_notification_title))
+                        .setContentText(getString(R.string.sh_notification_text))
                         .setVibrate(VIBRATOR_PATTERN)
                         .setSmallIcon(R.drawable.sh_notification_icon)
                         .setAutoCancel(true);
 
 
-        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-        stackBuilder.addNextIntent(new Intent(this, TargetCollectionActivity.class));
-        PendingIntent resultPendingIntent =
-                stackBuilder.getPendingIntent(
-                        0,
-                        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_ONE_SHOT
-                );
-        builder.setContentIntent(resultPendingIntent);
-        NotificationManager notificationManager =
-                (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
-        notificationManager.notify(1, builder.build());
+            TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+            Intent notificationIntent = new Intent(this, TargetCollectionActivity.class);
+            notificationIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            stackBuilder.addNextIntent(notificationIntent);
+            PendingIntent resultPendingIntent =
+                    stackBuilder.getPendingIntent(
+                            0,
+                            PendingIntent.FLAG_UPDATE_CURRENT
+                    );
+            builder.setContentIntent(resultPendingIntent);
+            NotificationManager notificationManager =
+                    (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
+            notificationManager.notify(1, builder.build());
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
-    public void cancelAllNotifications() {
-        NotificationManager notificationManager =
-                (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
-        notificationManager.cancelAll();
+
+    public void cancelAllNotifications(){
+        try {
+            NotificationManager notificationManager =
+                    (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
+            notificationManager.cancelAll();
+        }catch(Exception e){
+            e.printStackTrace();
+        }
     }
 
     /*
@@ -502,4 +532,19 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         return prefix + suffix + extension;
     }
 
+
+    public static boolean isApplicationSentToBackground(final Context context) {
+        if (context != null){
+            ActivityManager am = (ActivityManager) context
+                    .getSystemService(Context.ACTIVITY_SERVICE);
+            List<ActivityManager.RunningTaskInfo> tasks = am.getRunningTasks(1);
+            if (!tasks.isEmpty()) {
+                ComponentName topActivity = tasks.get(0).topActivity;
+                if (!topActivity.getPackageName().equals(context.getPackageName())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 }

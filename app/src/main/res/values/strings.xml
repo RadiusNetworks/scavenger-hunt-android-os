@@ -55,5 +55,11 @@
     <string name="sh_finishedactivity_tv_redemptiontext_replacement">Your completion code is:&#160;</string>
 
 
+    <!-- local notification -->
+
+    <string name="sh_notification_title">Scavenger Hunt</string>
+    <string name="sh_notification_text">A scavenger hunt location is nearby.</string>
+
+
 
 </resources>

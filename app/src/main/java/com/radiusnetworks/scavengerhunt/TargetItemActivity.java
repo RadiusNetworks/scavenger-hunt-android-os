@@ -40,18 +40,24 @@ public class TargetItemActivity extends Activity {
 	private String huntId;
 
     private ScavengerHuntApplication application;
-	
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		Log.i(TAG, "onCreate");
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Log.i(TAG, "onCreate");
         application = (ScavengerHuntApplication) this.getApplication();
-		setContentView(R.layout.sh_activity_target_item);
-		Bundle extras = getIntent().getExtras();
-		if (extras != null) {
-		    huntId = extras.getString("hunt_id");
-		    Log.d(TAG, "Activity started with passed hunt id of "+huntId);
-		}
+        setContentView(R.layout.sh_activity_target_item);
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            huntId = extras.getString("hunt_id");
+            String title = extras.getString("title");
+            String description = extras.getString("description");
+            Log.d(TAG, "Activity started with passed hunt id of "+huntId+". "+title+". "+description);
+
+            ((TextView) findViewById(R.id.sh_title)).setText(title);
+            ((TextView) findViewById(R.id.sh_description)).setText(description);
+
+        }
         application.setItemActivity(this);
 	}
 
