@@ -3,48 +3,55 @@
     package="com.radiusnetworks.scavengerhunt"
     android:versionCode="2"
     android:versionName="1.1" >
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
-    <uses-permission android:name="android.permission.VIBRATE"/>
-    <uses-permission android:name="android.permission.GET_TASKS"/>  <!-- needed to see if app is running in background -->
+
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.GET_TASKS" /> <!-- needed to see if app is running in background -->
     <application
-        android:debuggable="true"
         android:name="com.radiusnetworks.scavengerhunt.ScavengerHuntApplication"
         android:allowBackup="true"
+        android:debuggable="true"
         android:icon="@drawable/ic_launcher"
         android:label="Beacon Hunt"
         android:theme="@style/AppTheme" >
-        <activity
-            android:name=".FinishedActivity"
-            android:label="@string/app_name" >
-        </activity>
-        <activity
-            android:name="com.radiusnetworks.scavengerhunt.LoadingActivity"
-            android:label="@string/app_name" >
-
+        <activity android:name=".DummyInitialActivity"
+            android:label="Scavenger Hunt"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
+            android:name="com.radiusnetworks.scavengerhunt.FinishedActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name="com.radiusnetworks.scavengerhunt.LoadingActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name="com.radiusnetworks.scavengerhunt.InstructionActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
             android:name="com.radiusnetworks.scavengerhunt.TargetCollectionActivity"
-            android:screenOrientation="portrait"
-            android:label="@string/app_name" >
+            android:label="@string/app_name"
+            android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name="com.radiusnetworks.scavengerhunt.TargetItemActivity"
-            android:screenOrientation="portrait"
-            android:label="@string/app_name" >
+            android:label="@string/app_name"
+            android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name="com.radiusnetworks.scavengerhunt.HelpActivity"
-            android:screenOrientation="portrait"
-            android:label="@string/app_name" >
+            android:label="@string/app_name"
+            android:screenOrientation="portrait" >
         </activity>
     </application>
-
-
-
 
 </manifest>

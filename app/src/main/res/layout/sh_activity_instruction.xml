@@ -1,0 +1,66 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    tools:context="com.radiusnetworks.scavengerhunt.InstructionActivity">
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/imageView"
+        android:src="@drawable/bolt"
+        android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="@string/sh_activity_code_title_line1"
+        android:textStyle="bold"
+        android:textColor="#FFFFFF"
+        android:id="@+id/title1"
+        android:textSize="34dp"
+        android:layout_below="@+id/imageView"
+        android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textColor="#ffffff"
+        android:text="@string/sh_activity_code_tv_howitworks"
+        android:textSize="14dp"
+        android:id="@+id/instructions"
+        android:paddingTop="20dp"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
+        android:paddingBottom="20dp"
+        android:layout_below="@+id/title1" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/sh_activity_code_button_start"
+        android:id="@+id/sh_instruction_button"
+        android:width="100dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:background="#ffffff"
+        android:textColor="#000000"
+        android:textSize="20dp"
+        android:layout_below="@+id/instructions"
+        android:layout_centerHorizontal="true" />
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/splash"
+        android:layout_centerHorizontal="true"
+        android:scaleType="centerCrop"
+        android:visibility="visible" />
+
+</RelativeLayout>

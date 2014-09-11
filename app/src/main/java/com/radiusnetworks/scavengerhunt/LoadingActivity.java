@@ -104,7 +104,7 @@ public class LoadingActivity extends Activity {
                     else {
                         setContentView(R.layout.sh_activity_loading);
                         Log.d(TAG, "setting loading activity");
-                        application.startPk(null);
+                        application.startPk(null, false);
                     }
                 }
             });
@@ -171,7 +171,7 @@ public class LoadingActivity extends Activity {
         // sync pass or fail will cause a callback to ScavengerHuntApplication,
         // which will call the codeValidationPassed or codeValidationFailed methods below
         Log.d(TAG, "restarting proximity kit with code" + code);
-        application.startPk(code);
+        application.startPk(code, false);
     }
 
     @Override
@@ -303,5 +303,8 @@ public class LoadingActivity extends Activity {
         return true;
     }
 
-
+    @Override
+    public void onBackPressed() {
+       this.finish();
+    }
 }

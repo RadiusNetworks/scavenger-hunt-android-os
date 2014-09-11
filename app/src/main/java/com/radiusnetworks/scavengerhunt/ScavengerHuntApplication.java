@@ -37,6 +37,7 @@ import com.radiusnetworks.proximity.ibeacon.powersave.BackgroundPowerSaver;
 import com.radiusnetworks.proximity.licensing.PropertiesFile;
 import com.radiusnetworks.proximity.model.KitIBeacon;
 import com.radiusnetworks.scavengerhunt.assets.AssetFetcherCallback;
+import com.radiusnetworks.scavengerhunt.assets.CustomAssetCache;
 import com.radiusnetworks.scavengerhunt.assets.RemoteAssetCache;
 
 import java.util.ArrayList;
@@ -63,13 +64,6 @@ import java.util.Map;
  */
 
 
-/*
-TODO:
-
-1. Test on tablet
-2. Test with PK code
- */
-
 public class ScavengerHuntApplication extends Application implements ProximityKitNotifier {
 
     private static final String TAG = "ScavengerHuntApplication";
@@ -83,10 +77,13 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
     private TargetCollectionActivity collectionActivity = null;
     private TargetItemActivity itemActivity = null;
     private LoadingActivity loadingActivity = null;
+    private InstructionActivity instructionActivity = null;
     private RemoteAssetCache remoteAssetCache;
+    private CustomAssetCache customAssetCache;
     private String loadingFailedTitle;
     private String loadingFailedMessage;
     private boolean codeNeeded;
+    private boolean ignoreSync = true;
     int startCount = 0;
 
     @Override
@@ -98,8 +95,11 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         manager.setNotifier(this);
 
         // Include IBeacon logs and shorten background polling
-        manager.getIBeaconManager().setDebug(true);
-        manager.getIBeaconManager().setBackgroundBetweenScanPeriod(30000);
+        //manager.getIBeaconManager().setDebug(true);
+        //manager.getIBeaconManager().setBackgroundBetweenScanPeriod(30000);
+        
+        remoteAssetCache = new RemoteAssetCache(this);
+        customAssetCache = new CustomAssetCache(this);
 
         if (!new PropertiesFile().exists()) {
             this.codeNeeded = true;
@@ -110,18 +110,54 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         }
     }
 
-    public void startPk(String code) {
+    public void startPk(String code, boolean resume) {
         Log.d(TAG, "startPk called with code "+code );
+
         if (code != null) {
+            if (resume) {
+              ignoreSync = true;
+            }
+            else {
+                ignoreSync = false;
+            }
+            Log.d(TAG, "restarting PK with code: "+code);
             manager.restart(code);
         }
         else {
+            ignoreSync = false;
             manager.start(); // This starts ranging and monitoring for iBeacons defined in ProximityKit\
         }
     }
+    public boolean canResume() {
+        hunt = Hunt.loadFromPreferences(this);
 
-    public void startOver(Activity activity) {
-        if (!new PropertiesFile().exists()) {
+        remoteAssetCache = new RemoteAssetCache(this);
+        Log.d(TAG, "hunt loaded from preferences at boot: "+hunt);
+        return (hunt!= null && hunt.getTargetList().size() > 0 && validateRequiredImagesPresent());
+    }
+
+    public void startOver(Activity activity, boolean forceCodeReentry) {
+        if (hunt != null) {
+            hunt.reset();
+            hunt.saveToPreferences(this);
+        }
+        Log.i(TAG, "starting over");
+
+
+
+        cancelAllNotifications();
+
+        if (this.collectionActivity != null) {
+            Log.i(TAG, "calling finish on "+this.collectionActivity);
+            //not sure this is reliable
+            this.collectionActivity.forceReconfigure();
+        //    this.collectionActivity.finish();  // do this so it won't show up again on back press
+         //   this.collectionActivity = null;
+        }
+
+        Intent intent;
+        if (forceCodeReentry) {
+            this.codeNeeded = true;
             Log.d(TAG, "clearing shared preferences");
             SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
             String code = settings.getString("code", null);
@@ -132,22 +168,18 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
             hunt = null;
             remoteAssetCache = new RemoteAssetCache(this);
             remoteAssetCache.clear();
-
+            customAssetCache = new CustomAssetCache(this);
+            customAssetCache.clear();
             this.codeNeeded = true;
+            intent = new Intent(activity, LoadingActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
         }
         else {
-            Log.d(TAG, "starting over");
             hunt.reset();
-            hunt.saveToPreferences(this);
-        }
-
-        cancelAllNotifications();
-
-        Intent i = new Intent(activity, LoadingActivity.class);
-        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        startActivity(i);
-        if (this.collectionActivity != null) {
-            this.collectionActivity.finish();  // do this so it won't show up again on back press
+            hunt.start();
+            this.collectionActivity.recreate();
+            //intent = new Intent(activity, TargetCollectionActivity.class);//InstructionActivity.class);
         }
     }
 
@@ -156,6 +188,10 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         if (this.loadingFailedTitle != null) {
             showFailedErrorMessage();
         }
+    }
+
+    public void setInstructionActivity(InstructionActivity activity) {
+        this.instructionActivity = activity;
     }
 
 
@@ -183,7 +219,7 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
     @Override
     public void iBeaconDataUpdate(IBeacon iBeacon, IBeaconData iBeaconData, DataProviderException e) {
         // Called every second with data from ProximityKit when an iBeacon defined in ProximityKit is nearby
-        Log.d(TAG, "iBeaconDataUpdate: " + iBeacon.getProximityUuid() + " " + iBeacon.getMajor() + " " + iBeacon.getMinor());
+        Log.i(TAG, "iBeaconDataUpdate: " + iBeacon.getProximityUuid() + " " + iBeacon.getMajor() + " " + iBeacon.getMinor());
         String huntId = null;
         Double triggerDistanceMeters = MINIMUM_TRIGGER_DISTANCE_METERS;
         if (iBeaconData != null) {
@@ -217,13 +253,13 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
             // Logic to determine when a local notification will be sent
             if ((currentTimeMsecs - timeTargetNotifLastSent) > REPEAT_NOTIF_RESTRICTED_PERIOD_MSECS
                     && hunt.allowNotification() && (isApplicationSentToBackground(this.getApplicationContext())) && !target.isFound()) {
-                Log.d(TAG, "Sending notification");
+                Log.i(TAG, "Sending notification");
                 sendNotification();
                 target.setTimeNotifLastSent(currentTimeMsecs);
             }
 
             if (iBeacon.getAccuracy() < triggerDistanceMeters && !target.isFound()) {
-                Log.d(TAG, "Found an item. iBeacon.getAccuracy(): " + iBeacon.getAccuracy());
+                Log.i(TAG, "Found an item. iBeacon.getAccuracy(): " + iBeacon.getAccuracy());
                 target.setFound(true);
                 hunt.saveToPreferences(this);
                 if (collectionActivity != null) {
@@ -237,9 +273,18 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
                         startActivity(i);
                     }
                 }
+                else {
+                    Log.i(TAG, "null collection activity");
+                }
+
             }
             else {
-                Log.d(TAG, "null collection activity");
+                if (target.isFound()) {
+                    Log.d(TAG, "Not marking this target as found because it is already found");
+                }
+                else if (iBeacon.getAccuracy() < triggerDistanceMeters) {
+                    Log.d(TAG, "Not marking this target as found becasue it isn't close enough.  it needs to be under "+triggerDistanceMeters+" but is "+iBeacon.getAccuracy());
+                }
             }
         } else {
             Log.d(TAG, "hunt hasn't started, so all ibeacon detections are being ignored");
@@ -271,9 +316,16 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
     public void didSync() {
         // Called when ProximityKit data are updated from the server
         Log.d(TAG, "proximityKit didSync.  kit is " + manager.getKit());
+        if (ignoreSync) {
+            Log.d(TAG, "ignoring sync");
+            return;
+        }
+        ignoreSync = true;
 
         ArrayList<TargetItem> targets = new ArrayList<TargetItem>();
         Map<String, String> urlMap = new HashMap<String, String>();
+        Map<String,String> customStartScreenData = new HashMap <String,String>();
+        Map<String, String> customAssetUrlMap = new HashMap<String, String>();
 
         for (KitIBeacon iBeacon : manager.getKit().getIBeacons()) {
             String huntId = iBeacon.getAttributes().get("hunt_id");
@@ -302,6 +354,43 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
                 else {
                     urlMap.put("target" + huntId + "_found", variantTargetImageUrlForBaseUrlString(imageUrl, true));
                     urlMap.put("target" + huntId, variantTargetImageUrlForBaseUrlString(imageUrl, false));
+                }
+
+                String splashUrl = iBeacon.getAttributes().get("splash_url");
+                Log.e(TAG, "splashUrl = "+splashUrl);
+
+
+
+                //custom splash screen and instructions screen metadata
+
+                String instruction_background_color = iBeacon.getAttributes().get("instruction_background_color");
+
+
+                if (instruction_background_color != null){
+                    Log.d(TAG,"------This hunt has a custom instruction screen because the instruction_background_color is set to "+ instruction_background_color );
+                    //save custom splash screen and instructions screen for later use
+
+                    try {
+                        customStartScreenData.put("instruction_background_color", iBeacon.getAttributes().get("instruction_background_color"));
+                        customStartScreenData.put("instruction_image_url", iBeacon.getAttributes().get("instruction_image_url"));
+                        customStartScreenData.put("instruction_start_button_name", iBeacon.getAttributes().get("instruction_start_button_name"));
+                        customStartScreenData.put("instruction_text_1", iBeacon.getAttributes().get("instruction_text_1"));
+                        customStartScreenData.put("instruction_title", iBeacon.getAttributes().get("instruction_title"));
+                        customStartScreenData.put("splash_url", iBeacon.getAttributes().get("splash_url"));
+                        customStartScreenData.put("finish_background_color", iBeacon.getAttributes().get("finish_background_color"));
+                        customStartScreenData.put("finish_image_url", iBeacon.getAttributes().get("finish_image_url"));
+                        customStartScreenData.put("finish_button_name", iBeacon.getAttributes().get("finish_button_name"));
+                        customStartScreenData.put("finish_text_1", iBeacon.getAttributes().get("finish_text_1"));
+
+                        customAssetUrlMap.put("instruction_image", iBeacon.getAttributes().get("instruction_image_url"));
+                        customAssetUrlMap.put("finish_image", iBeacon.getAttributes().get("finish_image_url"));
+                        customAssetUrlMap.put("splash", iBeacon.getAttributes().get("splash_url"));
+
+
+                    }catch(Exception e){
+                        e.printStackTrace();
+                        customStartScreenData = null;}
+
                 }
             }
         }
@@ -332,12 +421,29 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
                 Log.d(TAG, "Target with hunt_id="+target.getId()+" is no longer in PK.  Target list has changed.");
             }
         }
+        if (customStartScreenData != null && customStartScreenData.equals(hunt.getCustomStartScreenData())){
+            targetListChanged = true;
+            Log.d(TAG, "customStartScreenData.equals(savedCustomData)");
+        } else{                Log.d(TAG, "customStartScreenData DOES NOT EQUAL savedCustomData"); }
+
         if (targetListChanged) {
             Log.w(TAG, "the targets in the hunt has changed from what we have in the settings.  starting over");
-            this.hunt = new Hunt(this,targets);
+            this.hunt = (customStartScreenData == null)? new Hunt(this,targets) : new Hunt(this,targets,customStartScreenData) ;
             this.hunt.saveToPreferences(this);
         }
 
+        customAssetCache = new CustomAssetCache(this);
+        customAssetCache.downloadCustomAssets(customAssetUrlMap, new AssetFetcherCallback() {
+            @Override
+            public void requestComplete() {
+                Log.i(TAG,"custom assets downloaded successfully");
+            }
+
+            @Override
+            public void requestFailed(Integer responseCode, Exception e) {
+                Log.e(TAG, "Failed to download the custom assets.");
+            }
+        });
         // After we have all our data from ProximityKit, we need to download the images and cache them
         // for display in the app.  We do this every time, so that the app can update the images after
         // later, and have users get the update if they restart the app.  This takes time, so if you
@@ -357,8 +463,16 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         });
     }
 
+
+
     @Override
     public void didFailSync(Exception e) {
+        Log.w(TAG, "proximityKit didFailSync");
+        if (ignoreSync) {
+            Log.d(TAG, "ignoring sync");
+            return;
+        }
+        ignoreSync = true;
         // called when ProximityKit data are requested from the server, but the request fails
         if (loadingActivity != null && loadingActivity.isValidatingCode()) {
             Log.w(TAG, "proximityKit didFailSync due to " + e + "  bad code entered?");
@@ -381,9 +495,17 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         }
 
         if (validateRequiredImagesPresent()) {
-            // Yes, we have everything we need to start up.  Let's start the Collection Activity
+            // Yes, we have everything we need to start up.
             this.hunt.start();
-            Intent i = new Intent(this, TargetCollectionActivity.class);
+            Intent i;
+
+            if (hunt.hasCustomStartScreen()) {
+                i = new Intent(this, InstructionActivity.class);
+            }
+            else {
+                i = new Intent(this, TargetCollectionActivity.class);
+            }
+
             i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(i);
             this.loadingActivity.finish(); // do this so that if we hit back, the loading activity won't show up again
@@ -421,6 +543,10 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         return remoteAssetCache;
     }
 
+    public CustomAssetCache getCustomAssetCache() {
+        return customAssetCache;
+    }
+
     // Checks to see that one found and one not found image has been downloaded for each target
     private boolean validateRequiredImagesPresent() {
         Log.d(TAG, "Validating required images are present");
@@ -441,13 +567,13 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
      */
     private void sendNotification() {
         try {
-        NotificationCompat.Builder builder =
-                new NotificationCompat.Builder(this)
-                        .setContentTitle(getString(R.string.sh_notification_title))
-                        .setContentText(getString(R.string.sh_notification_text))
-                        .setVibrate(VIBRATOR_PATTERN)
-                        .setSmallIcon(R.drawable.sh_notification_icon)
-                        .setAutoCancel(true);
+            NotificationCompat.Builder builder =
+                    new NotificationCompat.Builder(this)
+                            .setContentTitle(getString(R.string.sh_notification_title))
+                            .setContentText(getString(R.string.sh_notification_text))
+                            .setVibrate(VIBRATOR_PATTERN)
+                            .setSmallIcon(R.drawable.sh_notification_icon)
+                            .setAutoCancel(true);
 
 
             TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);

@@ -5,16 +5,13 @@
     <string name="action_settings">Settings</string>
     <string name="scanning">Scanning for iBeacons...</string>
 
-
-
-
     <!-- sh_activity_code and sh_activity_loading -->
     <string name="sh_activity_code_title_line1">Beacon</string>
     <string name="sh_activity_code_title_line2">Scavenger Hunt</string>
-    <string name="sh_activity_code_tv_powered_by">Powered by&#160;</string>
+    <string name="sh_activity_code_tv_powered_by">Powered by </string>
     <string name="rn_underline"><u>Radius Networks</u></string>
     <string name="sh_activity_code_button_start">Start</string>
-    <string name="sh_activity_code_tv_howitworks">HOW IT WORKS: Find the location for each of the scavenger hunt’s badges.  When you are within 10 meters of a location, you will see a notification and receive a colored badge.</string>
+    <string name="sh_activity_code_tv_howitworks">HOW IT WORKS: Find the location for each of the scavenger hunt’s badges.  When you reach a location, you will see a notification and receive a colored badge.</string>
     <string name="sh_activity_code_button_ok">OK</string>
     <string name="sh_activity_code_tv_help">Help</string>
     <string name="sh_activity_code_tv_entercode">Enter the 8 digit code provided by the scavenger hunt organizer. Tap help to learn how to organize a scavenger hunt or to get a sample code.</string>
@@ -24,28 +21,25 @@
     <!-- sh_activity_finished -->
     <string name="sh_activity_finished_tv_congratulations">Congratulations!</string>
     <string name="sh_activity_finished_tv_completed">You have successfully completed the\nScavenger Hunt.</string>
-    <string name="sh_activity_finished_button_redeem">Completion Code</string>
+    <string name="sh_activity_finished_button_redeem">Finish</string>
 
     <!-- sh_activity_redeemed -->
     <string name="sh_activity_redeemed_tv_redemptiontext">Your completion code is XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX</string>
     <string name="sh_activity_redeemed_button_finish">Finish</string>
     <string name="sh_activity_redeemed_tv_redemptiontext_replacement">Your completion code is:&#160;</string>
-
-    Your completion code is:
-
-    <!-- sh_activity_target_collection -->
+<!--    <string name="sh_activity_redeemed_tv_redemptiontext_replacement">Your completion code is: </string>  -->
+    Your completion code is:    <!-- sh_activity_target_collection -->
     <string name="sh_activity_targetcollection_button_startover">Start Over</string>
 
-    <!-- sh_activity_target_item   -->
+    <!-- sh_activity_target_item -->
     <string name="sh_activity_targetitem_tv_textview1">Distance</string>
     <string name="sh_activity_targetitem_tv_distance">--</string>
     <string name="sh_activity_targetitem_tv_textview2">Meters</string>
 
-
-    <!-- TargetCollectionActivity.java  -->
-    <string name="sh_targetcollectionactivity_found_line1">You’ve received badge&#160;</string>
+    <!-- TargetCollectionActivity.java -->
+    <string name="sh_targetcollectionactivity_found_line1">You’ve received badge </string>
     <string name="sh_targetcollectionactivity_found_line2">&#160;of&#160;</string>
-
+  <!--  <string name="sh_targetcollectionactivity_found_line2">  of  </string> -->
 
     <!-- FinishedActivity.java -->
     <string name="sh_finishedactivity_dialog_completed_title">Are you sure you are finished?</string>
@@ -53,13 +47,15 @@
     <string name="sh_finishedactivity_dialog_reset_title">Are you sure?</string>
     <string name="sh_finishedactivity_dialog_reset_message">All found locations will be cleared.</string>
     <string name="sh_finishedactivity_tv_redemptiontext_replacement">Your completion code is:&#160;</string>
-
+    <!--    <string name="sh_finishedactivity_tv_redemptiontext_replacement">Your completion code is: </string> -->
 
     <!-- local notification -->
 
     <string name="sh_notification_title">Scavenger Hunt</string>
     <string name="sh_notification_text">A scavenger hunt location is nearby.</string>
-
-
+    <string name="title_activity_instruction">InstructionActivity</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="hello_world">Hello world!</string>
 
 </resources>
