@@ -32,6 +32,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.radiusnetworks.ibeacon.IBeaconManager;
+import com.radiusnetworks.proximity.licensing.PropertiesFile;
 
 /**
  * Activity displays all the badge icons in the scavenger hunt and allows the
@@ -68,24 +69,29 @@ public class TargetCollectionActivity extends Activity  {
                     @Override
                     public void onClick(DialogInterface arg0, int arg1) {
                         final AlertDialog.Builder builder2 = new AlertDialog.Builder(TargetCollectionActivity.this);
-                        builder.setTitle("Restart the same scavenger hunt?");	// Are you sure you are finished?  You will not be allowed to return to this page
-                        builder.setMessage("Selecting different will require entering a new code.");
-                        builder.setPositiveButton("Same", new DialogInterface.OnClickListener() {
+                        builder2.setTitle("Restart the same scavenger hunt?");	// Are you sure you are finished?  You will not be allowed to return to this page
+                        builder2.setMessage("Selecting different will require entering a new code.");
+                        builder2.setPositiveButton("Same", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface arg0, int arg1) {
                                 application.startOver(TargetCollectionActivity.this, false /*no new code needed */);
                             }
 
                         });
-                        builder.setNegativeButton("Different", new DialogInterface.OnClickListener() {
+                        builder2.setNegativeButton("Different", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface arg0, int arg1) {
                                 application.startOver(TargetCollectionActivity.this, true /* force code re-entry */);
                             }
 
                         });
-                        AlertDialog dialog = builder.create();
-                        dialog.show();
+                        if ((!new PropertiesFile().exists())) {
+                            AlertDialog dialog2 = builder2.create();
+                            dialog2.show();
+                        }else{
+                            application.startOver(TargetCollectionActivity.this, false /*no new code needed */);
+                        }
+
                     }
 
                 });

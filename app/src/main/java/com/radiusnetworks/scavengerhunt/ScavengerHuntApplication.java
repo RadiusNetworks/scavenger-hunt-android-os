@@ -156,7 +156,7 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         }
 
         Intent intent;
-        if (forceCodeReentry) {
+        if (forceCodeReentry && (!new PropertiesFile().exists())) {
             this.codeNeeded = true;
             Log.d(TAG, "clearing shared preferences");
             SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
