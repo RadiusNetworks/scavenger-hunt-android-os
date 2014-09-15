@@ -38,21 +38,21 @@ import com.radiusnetworks.ibeacon.IBeaconManager;
  * user to tap on them to display estimated distance
  */
 public class TargetCollectionActivity extends Activity  {
-	public static final String TAG = "TargetCollectionActivity";
+    public static final String TAG = "TargetCollectionActivity";
 
-	private GridView gridView = null;
-	private BaseAdapter adapter = null;
-	private IBeaconManager iBeaconService = IBeaconManager.getInstanceForApplication(this);
+    private GridView gridView = null;
+    private BaseAdapter adapter = null;
+    private IBeaconManager iBeaconService = IBeaconManager.getInstanceForApplication(this);
     private ScavengerHuntApplication application;
     private boolean reconfigureNeeded = false;
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		Log.i(TAG, "onCreate");
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Log.i(TAG, "onCreate");
         application = (ScavengerHuntApplication) this.getApplication();
 
-		setContentView(R.layout.sh_activity_target_collection);
+        setContentView(R.layout.sh_activity_target_collection);
 
         reconfigureView();
 
@@ -93,7 +93,7 @@ public class TargetCollectionActivity extends Activity  {
                 dialog.show();
             }
         });
-	}
+    }
 
     private void reconfigureView() {
         Log.d(TAG, "in reconfigure view");
@@ -102,104 +102,114 @@ public class TargetCollectionActivity extends Activity  {
         gridView.setAdapter(adapter);
         gridView.setOnItemClickListener(itemClickListener);
         application.setCollectionActivity(this);
-        application.getHunt().sortTargetList();
+        try {
+            application.getHunt().sortTargetList();
+        }catch (NullPointerException npe){
+            npe.printStackTrace();
+        }
         adapter.notifyDataSetChanged();
         gridView.invalidateViews();
+
     }
 
     public void forceReconfigure() {
         reconfigureNeeded = true;    }
 
-	@Override
+    @Override
     public void onBackPressed() {
         moveTaskToBack(true);
     }
 
-	@Override
-	protected void onResume() {
-		super.onResume();
-		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+    @Override
+    protected void onResume() {
+        super.onResume();
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         if (reconfigureNeeded) {
             reconfigureView();
             reconfigureNeeded = false;
         }
-	}
-	@Override 
-	protected void onDestroy() {
-		super.onDestroy();
-		Log.i(TAG, "onDestroy");
+    }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.i(TAG, "onDestroy");
         application.setCollectionActivity(null);
-	}
+    }
 
 
-	private OnItemClickListener itemClickListener = new OnItemClickListener() {
-	    public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-	    	Log.d(TAG,"Position tapped ["+position+"]");
-			Intent i = new Intent(getApplicationContext(), TargetItemActivity.class);
-			TargetItem target = application.getHunt().getTargetList().get(position);
+    private OnItemClickListener itemClickListener = new OnItemClickListener() {
+        public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
+            Log.d(TAG,"Position tapped ["+position+"]");
+            Intent i = new Intent(getApplicationContext(), TargetItemActivity.class);
+            TargetItem target = application.getHunt().getTargetList().get(position);
 
             i.putExtra("hunt_id", target.getId());
             i.putExtra("title", target.getTitle());
             i.putExtra("description", target.getDescription());
-		    startActivity(i);
-	    }
-	};
-	
-	public void showItemFound() {
-    	runOnUiThread(new Runnable() {
-      	     public void run() {
-      			Log.i(TAG, "force refresh");
-      			adapter.notifyDataSetChanged();
-      			gridView.invalidateViews();
-      			Toast toast = Toast.makeText(TargetCollectionActivity.this, getString(R.string.sh_targetcollectionactivity_found_line1) +//"You've received badge "+
-                        application.getHunt().getFoundCount()+  getString(R.string.sh_targetcollectionactivity_found_line2) + //" of "+
+            startActivity(i);
+        }
+    };
+
+    public void showItemFound() {
+        runOnUiThread(new Runnable() {
+            public void run() {
+                Log.i(TAG, "force refresh");
+                adapter.notifyDataSetChanged();
+                gridView.invalidateViews();
+                Toast toast = Toast.makeText(TargetCollectionActivity.this, getString(R.string.sh_targetcollectionactivity_found_line1) +//"You've received badge "+
+                        application.getHunt().getFoundCount() + getString(R.string.sh_targetcollectionactivity_found_line2) + //" of "+
                         application.getHunt().getTargetList().size(), Toast.LENGTH_SHORT);
-      			toast.show();      	    	 
-      	     }
-    	});
+                toast.show();
+            }
+        });
 
-	}
+    }
 
 
-	private class TargetImageCollectionAdapter extends  BaseAdapter {
+    private class TargetImageCollectionAdapter extends  BaseAdapter {
 
-	    private Context mContext;
+        private Context mContext;
 
-	    public TargetImageCollectionAdapter(Context c) {
-	        mContext = c;
-	    }	    
-		@Override
-		public int getCount() {
-			return application.getHunt().getTargetList().size();
-		}
+        public TargetImageCollectionAdapter(Context c) {
+            mContext = c;
+        }
+        @Override
+        public int getCount() {
+            try {
+                return application.getHunt().getTargetList().size();
+            }catch(NullPointerException npe){ return 0; }
+        }
 
-		@Override
-		public Object getItem(int position) {
-            return application.getHunt().getTargetList().get(position);
-		}
+        @Override
+        public Object getItem(int position) {
+            try{
+                return application.getHunt().getTargetList().get(position);
+            }catch(NullPointerException npe){ return null;}
 
-		@Override
-		public long getItemId(int position) {
-			return position;
-		}
+        }
 
-		@Override
-		public View getView(final int position, View convertView, ViewGroup parent) {
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        @Override
+        public View getView(final int position, View convertView, ViewGroup parent) {
 
             if (convertView != null) {
                 Log.d(TAG, "convertview height is "+convertView.getHeight());
             }
-			TargetItem target = application.getHunt().getTargetList().get(position);
+            TargetItem target = application.getHunt().getTargetList().get(position);
 
             ImageView view;
             Double borderSize = 10.0;
 
-			if (!target.isFound()) {
+            if (!target.isFound()) {
                 view = application.getRemoteAssetCache().getImageByName("target"+target.getId(), (double) (gridView.getColumnWidth()-borderSize));
-			} 
-			else {
+            }
+            else {
                 view =application.getRemoteAssetCache().getImageByName("target"+target.getId()+"_found", (double) (gridView.getColumnWidth()-borderSize));
-			}
+            }
             // image layout adjustment
             view.setMinimumHeight(gridView.getColumnWidth());
             view.setMinimumWidth(gridView.getColumnWidth());
@@ -207,8 +217,8 @@ public class TargetCollectionActivity extends Activity  {
             return view;
 
 
-		}
-		
-	}
+        }
+
+    }
 
 }
