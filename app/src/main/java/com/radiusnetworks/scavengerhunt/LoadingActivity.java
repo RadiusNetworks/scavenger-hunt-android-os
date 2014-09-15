@@ -40,9 +40,6 @@ import com.radiusnetworks.ibeacon.IBeaconManager;
 import com.radiusnetworks.proximity.licensing.LicensingException;
 
 import java.io.FileNotFoundException;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
 
 /**
  * this Activity displays a loading spinner while downloading
@@ -305,6 +302,7 @@ public class LoadingActivity extends Activity {
 
     @Override
     public void onBackPressed() {
-       this.finish();
+        moveTaskToBack(true);
     }
+
 }
