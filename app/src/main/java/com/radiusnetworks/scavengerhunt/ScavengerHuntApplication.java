@@ -27,9 +27,11 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
+import com.radiusnetworks.proximity.ProximityKitBeacon;
 import com.radiusnetworks.proximity.ProximityKitBeaconRegion;
 import com.radiusnetworks.proximity.ProximityKitManager;
 import com.radiusnetworks.proximity.ProximityKitMonitorNotifier;
+import com.radiusnetworks.proximity.ProximityKitRangeNotifier;
 import com.radiusnetworks.proximity.ProximityKitSyncNotifier;
 import com.radiusnetworks.proximity.licensing.PropertiesFile;
 import com.radiusnetworks.proximity.model.KitBeacon;
@@ -37,13 +39,10 @@ import com.radiusnetworks.scavengerhunt.assets.AssetFetcherCallback;
 import com.radiusnetworks.scavengerhunt.assets.CustomAssetCache;
 import com.radiusnetworks.scavengerhunt.assets.RemoteAssetCache;
 
-import org.altbeacon.beacon.Beacon;
-import org.altbeacon.beacon.BeaconData;
-import org.altbeacon.beacon.BeaconDataNotifier;
 import org.altbeacon.beacon.BeaconParser;
-import org.altbeacon.beacon.client.DataProviderException;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -68,7 +67,7 @@ import java.util.Map;
 
 
 public class ScavengerHuntApplication extends Application implements ProximityKitMonitorNotifier,
-         ProximityKitSyncNotifier, BeaconDataNotifier {
+        ProximityKitRangeNotifier, ProximityKitSyncNotifier {
 
     private static final String TAG = "ScavengerHuntApplication";
     private static final Double MINIMUM_TRIGGER_DISTANCE_METERS = 10.0;
@@ -94,6 +93,7 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         Log.d(TAG, "Application onCreate.  Hunt is " + hunt);
         manager = ProximityKitManager.getInstanceForApplication(this);
         manager.setProximityKitMonitorNotifier(this);
+        manager.setProximityKitRangeNotifier(this);
         manager.setProximityKitSyncNotifier(this);
 
         // Include beacon logs and shorten background polling
@@ -122,7 +122,7 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
 
         if (code != null) {
             if (resume) {
-              ignoreSync = true;
+                ignoreSync = true;
             }
             else {
                 ignoreSync = false;
@@ -158,8 +158,8 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
             Log.i(TAG, "calling finish on "+this.collectionActivity);
             //not sure this is reliable
             this.collectionActivity.forceReconfigure();
-        //    this.collectionActivity.finish();  // do this so it won't show up again on back press
-         //   this.collectionActivity = null;
+            //    this.collectionActivity.finish();  // do this so it won't show up again on back press
+            //   this.collectionActivity = null;
         }
 
         Intent intent;
@@ -223,80 +223,92 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
     }
 
     @Override
-    public void beaconDataUpdate(Beacon beacon, BeaconData beaconData, DataProviderException e) {
-        // Called every second with data from ProximityKit when an beacon defined in ProximityKit is nearby
-        Log.i(TAG, "beaconDataUpdate: " + beacon.getId1() + " " + beacon.getId2() + " " + beacon.getId3());
-        String huntId = null;
-        Double triggerDistanceMeters = MINIMUM_TRIGGER_DISTANCE_METERS;
-        if (beaconData != null) {
-            huntId = beaconData.get("hunt_id");
-            if (beaconData.get("trigger_distance")!= null) {
-                triggerDistanceMeters = Double.parseDouble(beaconData.get("trigger_distance"));
-            }
-        }
+    /**
+     * Called whenever the Proximity Kit manager sees registered beacons.
+     *
+     * @param beacons   a collection of <code>ProximityKitBeacon</code> instances seen in the most
+     *                  recent ranging cycle.
+     * @param region    The <code>ProximityKitBeaconRegion</code> instance that was used to start
+     *                  ranging for these beacons.
+     */
+    public void didRangeBeaconsInRegion(Collection<ProximityKitBeacon> beacons, ProximityKitBeaconRegion region) {
+        Log.d(TAG, "didRangeBeaconsInRegion: size=" + beacons.size() + " region=" + region);
 
 
-        if (huntId == null) {
-            Log.d(TAG, "The beacon I just saw is not part of the scavenger hunt, according to ProximityKit");
-            return;
-        }
-        if (hunt == null) {
-            // Hunt has not been initialized from PK yet.  Ignoring all beacons
-            return;
-        }
-        TargetItem target = hunt.getTargetById(huntId);
-        if (target == null) {
-            Log.w(TAG, "The beacon I just saw has a hunt_id of " + huntId + ", but it was not part of the scavenger hunt when this app was started.");
-            return;
-        }
 
+        for (ProximityKitBeacon beacon : beacons)    {
+            Log.i(TAG, "ranged beacon: " + beacon.getId1() + " " + beacon.getId2() + " " + beacon.getId3());
 
-        if (hunt.getElapsedTime() != 0) {
-
-            long timeTargetNotifLastSent = target.getTimeNotifLastSent();
-            long currentTimeMsecs = System.currentTimeMillis();
-
-            // Logic to determine when a local notification will be sent
-            if ((currentTimeMsecs - timeTargetNotifLastSent) > REPEAT_NOTIF_RESTRICTED_PERIOD_MSECS
-                    && hunt.allowNotification() && (isApplicationSentToBackground(this.getApplicationContext())) && !target.isFound()) {
-                Log.i(TAG, "Sending notification");
-                sendNotification();
-                target.setTimeNotifLastSent(currentTimeMsecs);
+            String huntId = null;
+            Double triggerDistanceMeters = MINIMUM_TRIGGER_DISTANCE_METERS;
+            Map<String,String> beaconData = beacon.getAttributes();
+            if (beaconData != null) {
+                huntId = beaconData.get("hunt_id");
+                if (beaconData.get("trigger_distance") != null) {
+                    triggerDistanceMeters = Double.parseDouble(beaconData.get("trigger_distance"));
+                }
             }
 
-            if (beacon.getDistance() < triggerDistanceMeters && !target.isFound()) {
-                Log.i(TAG, "Found an item. beacon.getAccuracy(): " + beacon.getDistance());
-                target.setFound(true);
-                hunt.saveToPreferences(this);
-                if (collectionActivity != null) {
-                    collectionActivity.showItemFound();
-                    if (hunt.everythingFound()) {
-                        // switch to FinishedActivity to show player he/she has won
-                        Log.d(TAG, "game is won");
-                        cancelAllNotifications();
-                        Intent i = new Intent(collectionActivity, FinishedActivity.class);
-                        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                        startActivity(i);
+
+            if (huntId == null) {
+                Log.d(TAG, "The beacon I just saw is not part of the scavenger hunt, according to ProximityKit");
+                return;
+            }
+            if (hunt == null) {
+                // Hunt has not been initialized from PK yet.  Ignoring all beacons
+                return;
+            }
+            TargetItem target = hunt.getTargetById(huntId);
+            if (target == null) {
+                Log.w(TAG, "The beacon I just saw has a hunt_id of " + huntId + ", but it was not part of the scavenger hunt when this app was started.");
+                return;
+            }
+
+
+            if (hunt.getElapsedTime() != 0) {
+
+                long timeTargetNotifLastSent = target.getTimeNotifLastSent();
+                long currentTimeMsecs = System.currentTimeMillis();
+
+                // Logic to determine when a local notification will be sent
+                if ((currentTimeMsecs - timeTargetNotifLastSent) > REPEAT_NOTIF_RESTRICTED_PERIOD_MSECS
+                        && hunt.allowNotification() && (isApplicationSentToBackground(this.getApplicationContext())) && !target.isFound()) {
+                    Log.i(TAG, "Sending notification");
+                    sendNotification();
+                    target.setTimeNotifLastSent(currentTimeMsecs);
+                }
+
+                if (beacon.getDistance() < triggerDistanceMeters && !target.isFound()) {
+                    Log.i(TAG, "Found an item. beacon.getAccuracy(): " + beacon.getDistance());
+                    target.setFound(true);
+                    hunt.saveToPreferences(this);
+                    if (collectionActivity != null) {
+                        collectionActivity.showItemFound();
+                        if (hunt.everythingFound()) {
+                            // switch to FinishedActivity to show player he/she has won
+                            Log.d(TAG, "game is won");
+                            cancelAllNotifications();
+                            Intent i = new Intent(collectionActivity, FinishedActivity.class);
+                            i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                            startActivity(i);
+                        }
+                    } else {
+                        Log.i(TAG, "null collection activity");
+                    }
+
+                } else {
+                    if (target.isFound()) {
+                        Log.d(TAG, "Not marking this target as found because it is already found");
+                    } else if (beacon.getDistance() < triggerDistanceMeters) {
+                        Log.d(TAG, "Not marking this target as found because it isn't close enough.  it needs to be under " + triggerDistanceMeters + " but is " + beacon.getDistance());
                     }
                 }
-                else {
-                    Log.i(TAG, "null collection activity");
-                }
-
+            } else {
+                Log.d(TAG, "hunt hasn't started, so all beacon detections are being ignored");
             }
-            else {
-                if (target.isFound()) {
-                    Log.d(TAG, "Not marking this target as found because it is already found");
-                }
-                else if (beacon.getDistance() < triggerDistanceMeters) {
-                    Log.d(TAG, "Not marking this target as found because it isn't close enough.  it needs to be under "+triggerDistanceMeters+" but is "+beacon.getDistance());
-                }
+            if (itemActivity != null) {
+                itemActivity.updateDistance(beacon, beaconData);
             }
-        } else {
-            Log.d(TAG, "hunt hasn't started, so all beacon detections are being ignored");
-        }
-        if (itemActivity != null) {
-            itemActivity.updateDistance(beacon, beaconData);
         }
     }
 
