@@ -39,8 +39,6 @@ import com.radiusnetworks.scavengerhunt.assets.AssetFetcherCallback;
 import com.radiusnetworks.scavengerhunt.assets.CustomAssetCache;
 import com.radiusnetworks.scavengerhunt.assets.RemoteAssetCache;
 
-import org.altbeacon.beacon.BeaconParser;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -100,10 +98,6 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         //manager.getBeaconManager().setDebug(true);
         //manager.getBeaconManager().setBackgroundBetweenScanPeriod(30000);
 
-        //for testing only
-        //Allows iBeacon detection.
-        manager.getBeaconManager().getBeaconParsers()
-                .add(new BeaconParser().setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24"));
 
         remoteAssetCache = new RemoteAssetCache(this);
         customAssetCache = new CustomAssetCache(this);
