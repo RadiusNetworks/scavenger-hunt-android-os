@@ -13,24 +13,16 @@
  */
 package com.radiusnetworks.scavengerhunt;
 
-import java.text.DecimalFormat;
-import java.util.List;
-
-import com.radiusnetworks.ibeacon.IBeacon;
-import com.radiusnetworks.ibeacon.IBeaconData;
-import com.radiusnetworks.ibeacon.IBeaconManager;
-import com.radiusnetworks.ibeacon.RangeNotifier;
-import com.radiusnetworks.ibeacon.Region;
-import com.radiusnetworks.ibeacon.IBeaconConsumer;
-
-import android.os.Bundle;
-import android.os.RemoteException;
 import android.app.Activity;
 import android.content.pm.ActivityInfo;
-
+import android.os.Bundle;
 import android.util.Log;
-import android.view.Menu;
 import android.widget.TextView;
+
+import org.altbeacon.beacon.Beacon;
+import org.altbeacon.beacon.BeaconData;
+
+import java.text.DecimalFormat;
 
 /**
  * Displays the estimated distance in meters to the target
@@ -73,12 +65,12 @@ public class TargetItemActivity extends Activity {
         application.setItemActivity(null);
     }
 	
-	public void updateDistance(final IBeacon iBeacon, final IBeaconData data) {
+	public void updateDistance(final Beacon beacon, final BeaconData data) {
         if (data == null || !data.get("hunt_id").equals(huntId)) {
-            // This iBeacon isn't the one we are showing.  Ignore it.
+            // This beacon isn't the one we are showing.  Ignore it.
             return;
         }
-        final double distance = iBeacon.getAccuracy();
+        final double distance = beacon.getDistance();
 
     	runOnUiThread(new Runnable() {
    	     public void run() {

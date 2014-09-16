@@ -17,7 +17,7 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.radiusnetworks.ibeacon.IBeaconData;
+import org.altbeacon.beacon.BeaconData;
 
 import java.io.FileNotFoundException;
 
@@ -78,7 +78,7 @@ public class AssetFetcher extends AsyncTask<Void, Void, Void> {
         return null;
     }
 
-    protected void onPostExecute(IBeaconData data) {
+    protected void onPostExecute(BeaconData data) {
     }
 
     public void request() throws SecurityException, FileNotFoundException, java.io.IOException {

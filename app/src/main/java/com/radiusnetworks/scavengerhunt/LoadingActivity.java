@@ -35,9 +35,10 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.radiusnetworks.ibeacon.BleNotAvailableException;
-import com.radiusnetworks.ibeacon.IBeaconManager;
 import com.radiusnetworks.proximity.licensing.LicensingException;
+
+import org.altbeacon.beacon.BeaconManager;
+import org.altbeacon.beacon.BleNotAvailableException;
 
 import java.io.FileNotFoundException;
 
@@ -236,10 +237,10 @@ public class LoadingActivity extends Activity {
 
     }
     private boolean checkPrerequisites() {
-        IBeaconManager iBeaconManager = IBeaconManager.getInstanceForApplication(this);
+        BeaconManager beaconManager = BeaconManager.getInstanceForApplication(this);
 
         try {
-            if (!iBeaconManager.checkAvailability()) {
+            if (!beaconManager.checkAvailability()) {
                 final AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setTitle("Bluetooth not enabled");
                 builder.setMessage("The scavenger hunt requires that Bluetooth be turned on.  Please enable bluetooth in settings.");

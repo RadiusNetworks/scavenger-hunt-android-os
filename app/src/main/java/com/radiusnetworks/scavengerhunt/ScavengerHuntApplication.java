@@ -27,18 +27,21 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
-import com.radiusnetworks.ibeacon.IBeacon;
-import com.radiusnetworks.ibeacon.IBeaconData;
-import com.radiusnetworks.ibeacon.Region;
-import com.radiusnetworks.ibeacon.client.DataProviderException;
+import com.radiusnetworks.proximity.ProximityKitBeaconRegion;
 import com.radiusnetworks.proximity.ProximityKitManager;
-import com.radiusnetworks.proximity.ProximityKitNotifier;
-import com.radiusnetworks.proximity.ibeacon.powersave.BackgroundPowerSaver;
+import com.radiusnetworks.proximity.ProximityKitMonitorNotifier;
+import com.radiusnetworks.proximity.ProximityKitSyncNotifier;
 import com.radiusnetworks.proximity.licensing.PropertiesFile;
-import com.radiusnetworks.proximity.model.KitIBeacon;
+import com.radiusnetworks.proximity.model.KitBeacon;
 import com.radiusnetworks.scavengerhunt.assets.AssetFetcherCallback;
 import com.radiusnetworks.scavengerhunt.assets.CustomAssetCache;
 import com.radiusnetworks.scavengerhunt.assets.RemoteAssetCache;
+
+import org.altbeacon.beacon.Beacon;
+import org.altbeacon.beacon.BeaconData;
+import org.altbeacon.beacon.BeaconDataNotifier;
+import org.altbeacon.beacon.BeaconParser;
+import org.altbeacon.beacon.client.DataProviderException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -49,22 +52,23 @@ import java.util.Map;
  * Created by dyoung on 1/24/14.
  *
  * This is the central application class for the Scavenger Hunt.  It is responsible for:
- * 1. Initializing ProxomityKit, which downloads all the iBeacons associated with the hunt
+ * 1. Initializing ProxomityKit, which downloads all the beacons associated with the hunt
  *    along with their configured hunt_id values and image_url values.  It then starts
- *    ranging and monitoring for these iBeacons, and will continue to do so even across
+ *    ranging and monitoring for these beacons, and will continue to do so even across
  *    a reboot.
  * 2. Downloads all the scavenger hunt badges ("target images") needed for both the found and
  *    not found states of each target.
  * 3. Updates the LoadingActivity with the status of the above download state.
  * 4. Once loading completes, launches the TargetCollectionActivity which is the main screen for the
  *    hunt.
- * 5. Handles all ranging and monitoring callbacks for iBeacons.  When an iBeacon is ranged,
+ * 5. Handles all ranging and monitoring callbacks for beacons.  When an beacon is ranged,
  *    this class checks to see if it matches a scavenger hunt target and awards a badge if it is
- *    close enough.  If an iBeacon comes into view, it sends a notification that a target is nearby.
+ *    close enough.  If an beacon comes into view, it sends a notification that a target is nearby.
  */
 
 
-public class ScavengerHuntApplication extends Application implements ProximityKitNotifier {
+public class ScavengerHuntApplication extends Application implements ProximityKitMonitorNotifier,
+         ProximityKitSyncNotifier, BeaconDataNotifier {
 
     private static final String TAG = "ScavengerHuntApplication";
     private static final Double MINIMUM_TRIGGER_DISTANCE_METERS = 10.0;
@@ -73,7 +77,6 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
     private Hunt hunt;
     private final long[] VIBRATOR_PATTERN = {0l, 500l, 0l}; // start immediately, vigrate for 500ms, sleep for 0ms
     @SuppressWarnings("unused")
-    private BackgroundPowerSaver backgroundPowerSaver;
     private TargetCollectionActivity collectionActivity = null;
     private TargetItemActivity itemActivity = null;
     private LoadingActivity loadingActivity = null;
@@ -84,20 +87,24 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
     private String loadingFailedMessage;
     private boolean codeNeeded;
     private boolean ignoreSync = true;
-    int startCount = 0;
 
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.d(TAG, "Application onCreate.  Hunt is "+hunt);
-        backgroundPowerSaver = new BackgroundPowerSaver(this);
+        Log.d(TAG, "Application onCreate.  Hunt is " + hunt);
         manager = ProximityKitManager.getInstanceForApplication(this);
-        manager.setNotifier(this);
+        manager.setProximityKitMonitorNotifier(this);
+        manager.setProximityKitSyncNotifier(this);
 
-        // Include IBeacon logs and shorten background polling
-        //manager.getIBeaconManager().setDebug(true);
-        //manager.getIBeaconManager().setBackgroundBetweenScanPeriod(30000);
-        
+        // Include beacon logs and shorten background polling
+        //manager.getBeaconManager().setDebug(true);
+        //manager.getBeaconManager().setBackgroundBetweenScanPeriod(30000);
+
+        //for testing only
+        //Allows iBeacon detection.
+        manager.getBeaconManager().getBeaconParsers()
+                .add(new BeaconParser().setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24"));
+
         remoteAssetCache = new RemoteAssetCache(this);
         customAssetCache = new CustomAssetCache(this);
 
@@ -125,7 +132,7 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         }
         else {
             ignoreSync = false;
-            manager.start(); // This starts ranging and monitoring for iBeacons defined in ProximityKit\
+            manager.start(); // This starts ranging and monitoring for beacons defined in ProximityKit\
         }
     }
     public boolean canResume() {
@@ -215,32 +222,31 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         loadingFailedTitle = null;
     }
 
-
     @Override
-    public void iBeaconDataUpdate(IBeacon iBeacon, IBeaconData iBeaconData, DataProviderException e) {
-        // Called every second with data from ProximityKit when an iBeacon defined in ProximityKit is nearby
-        Log.i(TAG, "iBeaconDataUpdate: " + iBeacon.getProximityUuid() + " " + iBeacon.getMajor() + " " + iBeacon.getMinor());
+    public void beaconDataUpdate(Beacon beacon, BeaconData beaconData, DataProviderException e) {
+        // Called every second with data from ProximityKit when an beacon defined in ProximityKit is nearby
+        Log.i(TAG, "beaconDataUpdate: " + beacon.getId1() + " " + beacon.getId2() + " " + beacon.getId3());
         String huntId = null;
         Double triggerDistanceMeters = MINIMUM_TRIGGER_DISTANCE_METERS;
-        if (iBeaconData != null) {
-            huntId = iBeaconData.get("hunt_id");
-            if (iBeaconData.get("trigger_distance")!= null) {
-                triggerDistanceMeters = Double.parseDouble(iBeaconData.get("trigger_distance"));
+        if (beaconData != null) {
+            huntId = beaconData.get("hunt_id");
+            if (beaconData.get("trigger_distance")!= null) {
+                triggerDistanceMeters = Double.parseDouble(beaconData.get("trigger_distance"));
             }
         }
 
 
         if (huntId == null) {
-            Log.d(TAG, "The iBeacon I just saw is not part of the scavenger hunt, according to ProximityKit");
+            Log.d(TAG, "The beacon I just saw is not part of the scavenger hunt, according to ProximityKit");
             return;
         }
         if (hunt == null) {
-            // Hunt has not been initialized from PK yet.  Ignoring all iBeacons
+            // Hunt has not been initialized from PK yet.  Ignoring all beacons
             return;
         }
         TargetItem target = hunt.getTargetById(huntId);
         if (target == null) {
-            Log.w(TAG, "The iBeacon I just saw has a hunt_id of " + huntId + ", but it was not part of the scavenger hunt when this app was started.");
+            Log.w(TAG, "The beacon I just saw has a hunt_id of " + huntId + ", but it was not part of the scavenger hunt when this app was started.");
             return;
         }
 
@@ -258,8 +264,8 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
                 target.setTimeNotifLastSent(currentTimeMsecs);
             }
 
-            if (iBeacon.getAccuracy() < triggerDistanceMeters && !target.isFound()) {
-                Log.i(TAG, "Found an item. iBeacon.getAccuracy(): " + iBeacon.getAccuracy());
+            if (beacon.getDistance() < triggerDistanceMeters && !target.isFound()) {
+                Log.i(TAG, "Found an item. beacon.getAccuracy(): " + beacon.getDistance());
                 target.setFound(true);
                 hunt.saveToPreferences(this);
                 if (collectionActivity != null) {
@@ -282,33 +288,33 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
                 if (target.isFound()) {
                     Log.d(TAG, "Not marking this target as found because it is already found");
                 }
-                else if (iBeacon.getAccuracy() < triggerDistanceMeters) {
-                    Log.d(TAG, "Not marking this target as found becasue it isn't close enough.  it needs to be under "+triggerDistanceMeters+" but is "+iBeacon.getAccuracy());
+                else if (beacon.getDistance() < triggerDistanceMeters) {
+                    Log.d(TAG, "Not marking this target as found because it isn't close enough.  it needs to be under "+triggerDistanceMeters+" but is "+beacon.getDistance());
                 }
             }
         } else {
-            Log.d(TAG, "hunt hasn't started, so all ibeacon detections are being ignored");
+            Log.d(TAG, "hunt hasn't started, so all beacon detections are being ignored");
         }
         if (itemActivity != null) {
-            itemActivity.updateDistance(iBeacon, iBeaconData);
+            itemActivity.updateDistance(beacon, beaconData);
         }
     }
 
     @Override
-    public void didEnterRegion(Region region) {
-        // Called when one of the iBeacons defined in ProximityKit first appears
+    public void didEnterRegion(ProximityKitBeaconRegion region) {
+        // Called when one of the beacons defined in ProximityKit first appears
         Log.d(TAG, "didEnterRegion");
     }
 
     @Override
-    public void didExitRegion(Region region) {
-        // Called when one of the iBeacons defined in ProximityKit first disappears
+    public void didExitRegion(ProximityKitBeaconRegion region) {
+        // Called when one of the beacons defined in ProximityKit first disappears
         Log.d(TAG, "didExitRegion");
     }
 
     @Override
-    public void didDetermineStateForRegion(int i, Region region) {
-        // Called when one of the iBeacons defined in ProximityKit first appears or disappears
+    public void didDetermineStateForRegion(int i, ProximityKitBeaconRegion region) {
+        // Called when one of the beacons defined in ProximityKit first appears or disappears
         Log.d(TAG, "didExitRegion");
     }
 
@@ -327,25 +333,25 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         Map<String,String> customStartScreenData = new HashMap <String,String>();
         Map<String, String> customAssetUrlMap = new HashMap<String, String>();
 
-        for (KitIBeacon iBeacon : manager.getKit().getIBeacons()) {
-            String huntId = iBeacon.getAttributes().get("hunt_id");
+        for (KitBeacon beacon : manager.getKit().getBeacons()) {
+            String huntId = beacon.getAttributes().get("hunt_id");
             if (huntId != null) {
                 TargetItem target = new TargetItem(huntId);
 
-                String title = iBeacon.getAttributes().get("title");
+                String title = beacon.getAttributes().get("title");
                 if (title != null) {
                     target.setTitle(title);
                     Log.d(TAG, "title = "+title);
                 } else {                     Log.d(TAG, "title = null");}
 
-                String description = iBeacon.getAttributes().get("description");
+                String description = beacon.getAttributes().get("description");
                 if (description != null) {
                     target.setDescription(description);
                     Log.d(TAG, "description = "+description);
                 } else {                     Log.d(TAG, "description = null");}
 
                 targets.add(target);
-                String imageUrl = iBeacon.getAttributes().get("image_url");
+                String imageUrl = beacon.getAttributes().get("image_url");
                 if (imageUrl == null) {
                     Log.e(TAG, "ERROR: No image_url specified in ProximityKit for item with hunt_id=" + huntId);
                     loadingActivity.codeValidationFailed(new RuntimeException("No targets configured for the entered code.  At least one beacon must be configured in ProximityKit with a hunt_id key."));
@@ -356,14 +362,14 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
                     urlMap.put("target" + huntId, variantTargetImageUrlForBaseUrlString(imageUrl, false));
                 }
 
-                String splashUrl = iBeacon.getAttributes().get("splash_url");
+                String splashUrl = beacon.getAttributes().get("splash_url");
                 Log.e(TAG, "splashUrl = "+splashUrl);
 
 
 
                 //custom splash screen and instructions screen metadata
 
-                String instruction_background_color = iBeacon.getAttributes().get("instruction_background_color");
+                String instruction_background_color = beacon.getAttributes().get("instruction_background_color");
 
 
                 if (instruction_background_color != null){
@@ -371,20 +377,20 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
                     //save custom splash screen and instructions screen for later use
 
                     try {
-                        customStartScreenData.put("instruction_background_color", iBeacon.getAttributes().get("instruction_background_color"));
-                        customStartScreenData.put("instruction_image_url", iBeacon.getAttributes().get("instruction_image_url"));
-                        customStartScreenData.put("instruction_start_button_name", iBeacon.getAttributes().get("instruction_start_button_name"));
-                        customStartScreenData.put("instruction_text_1", iBeacon.getAttributes().get("instruction_text_1"));
-                        customStartScreenData.put("instruction_title", iBeacon.getAttributes().get("instruction_title"));
-                        customStartScreenData.put("splash_url", iBeacon.getAttributes().get("splash_url"));
-                        customStartScreenData.put("finish_background_color", iBeacon.getAttributes().get("finish_background_color"));
-                        customStartScreenData.put("finish_image_url", iBeacon.getAttributes().get("finish_image_url"));
-                        customStartScreenData.put("finish_button_name", iBeacon.getAttributes().get("finish_button_name"));
-                        customStartScreenData.put("finish_text_1", iBeacon.getAttributes().get("finish_text_1"));
+                        customStartScreenData.put("instruction_background_color", beacon.getAttributes().get("instruction_background_color"));
+                        customStartScreenData.put("instruction_image_url", beacon.getAttributes().get("instruction_image_url"));
+                        customStartScreenData.put("instruction_start_button_name", beacon.getAttributes().get("instruction_start_button_name"));
+                        customStartScreenData.put("instruction_text_1", beacon.getAttributes().get("instruction_text_1"));
+                        customStartScreenData.put("instruction_title", beacon.getAttributes().get("instruction_title"));
+                        customStartScreenData.put("splash_url", beacon.getAttributes().get("splash_url"));
+                        customStartScreenData.put("finish_background_color", beacon.getAttributes().get("finish_background_color"));
+                        customStartScreenData.put("finish_image_url", beacon.getAttributes().get("finish_image_url"));
+                        customStartScreenData.put("finish_button_name", beacon.getAttributes().get("finish_button_name"));
+                        customStartScreenData.put("finish_text_1", beacon.getAttributes().get("finish_text_1"));
 
-                        customAssetUrlMap.put("instruction_image", iBeacon.getAttributes().get("instruction_image_url"));
-                        customAssetUrlMap.put("finish_image", iBeacon.getAttributes().get("finish_image_url"));
-                        customAssetUrlMap.put("splash", iBeacon.getAttributes().get("splash_url"));
+                        customAssetUrlMap.put("instruction_image", beacon.getAttributes().get("instruction_image_url"));
+                        customAssetUrlMap.put("finish_image", beacon.getAttributes().get("finish_image_url"));
+                        customAssetUrlMap.put("splash", beacon.getAttributes().get("splash_url"));
 
 
                     }catch(Exception e){
