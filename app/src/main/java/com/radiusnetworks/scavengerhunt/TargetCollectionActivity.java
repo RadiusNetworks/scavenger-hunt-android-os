@@ -31,8 +31,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.radiusnetworks.ibeacon.IBeaconManager;
 import com.radiusnetworks.proximity.licensing.PropertiesFile;
+
+import org.altbeacon.beacon.BeaconManager;
 
 /**
  * Activity displays all the badge icons in the scavenger hunt and allows the
@@ -43,7 +44,7 @@ public class TargetCollectionActivity extends Activity  {
 
     private GridView gridView = null;
     private BaseAdapter adapter = null;
-    private IBeaconManager iBeaconService = IBeaconManager.getInstanceForApplication(this);
+    private BeaconManager beaconService = BeaconManager.getInstanceForApplication(this);
     private ScavengerHuntApplication application;
     private boolean reconfigureNeeded = false;
 

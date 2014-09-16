@@ -20,24 +20,20 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
-import android.graphics.Point;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import android.view.Display;
 import android.view.View;
-import android.view.ViewTreeObserver;
 import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.radiusnetworks.ibeacon.BleNotAvailableException;
-import com.radiusnetworks.ibeacon.IBeaconManager;
 import com.radiusnetworks.proximity.licensing.LicensingException;
+
+import org.altbeacon.beacon.BeaconManager;
+import org.altbeacon.beacon.BleNotAvailableException;
 
 import java.io.FileNotFoundException;
 
@@ -120,29 +116,6 @@ public class LoadingActivity extends Activity {
                 Intent browserIntent = new Intent(Intent.ACTION_VIEW,
                         Uri.parse("http://developer.radiusnetworks.com/scavenger_hunt"));
                 startActivity(browserIntent);
-            }
-        });
-
-        //checking screen size to make sure everything will fit
-        Display display = getWindowManager().getDefaultDisplay();
-        Point size = new Point();
-        display.getSize(size);
-        final int screenH = size.y;
-        final RelativeLayout textLayout = (RelativeLayout) this.findViewById(R.id.textLayout);
-        final ImageView boltImage = (ImageView) this.findViewById(R.id.imageView);
-
-
-        //Dynamically resizing the bolt image if screen is too small
-        ViewTreeObserver vto = boltImage.getViewTreeObserver();
-        vto.addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
-            public boolean onPreDraw() {
-                int contentHeight = textLayout.getMeasuredHeight();
-                int boltHeight = boltImage.getMeasuredHeight();
-                   Log.d(TAG,"screenH = "+screenH+", contentHeight = "+contentHeight+", boltHeight = "+boltHeight);
-                if (contentHeight > screenH){
-                    boltImage.setMaxHeight(screenH -(contentHeight - boltHeight));
-                }
-                return true;
             }
         });
 
@@ -236,10 +209,10 @@ public class LoadingActivity extends Activity {
 
     }
     private boolean checkPrerequisites() {
-        IBeaconManager iBeaconManager = IBeaconManager.getInstanceForApplication(this);
+        BeaconManager beaconManager = BeaconManager.getInstanceForApplication(this);
 
         try {
-            if (!iBeaconManager.checkAvailability()) {
+            if (!beaconManager.checkAvailability()) {
                 final AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setTitle("Bluetooth not enabled");
                 builder.setMessage("The scavenger hunt requires that Bluetooth be turned on.  Please enable bluetooth in settings.");

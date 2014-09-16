@@ -3,7 +3,7 @@
 
     <string name="app_name">Scavenger Hunt</string>
     <string name="action_settings">Settings</string>
-    <string name="scanning">Scanning for iBeacons...</string>
+    <string name="scanning">Scanning for beacons...</string>
 
     <!-- sh_activity_code and sh_activity_loading -->
     <string name="sh_activity_code_title_line1">Beacon</string>
