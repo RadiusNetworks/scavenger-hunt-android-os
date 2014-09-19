@@ -560,7 +560,7 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
     }
 
     // Checks to see that one found and one not found image has been downloaded for each target
-    private boolean validateRequiredImagesPresent() {
+    public boolean validateRequiredImagesPresent() {
         Log.d(TAG, "Validating required images are present");
         boolean missing = false;
         for (TargetItem target : hunt.getTargetList()) {

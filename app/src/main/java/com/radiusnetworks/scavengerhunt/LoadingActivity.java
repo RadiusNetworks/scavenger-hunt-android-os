@@ -54,7 +54,7 @@ public class LoadingActivity extends Activity {
 
         application = (ScavengerHuntApplication) this.getApplication();
         application.setLoadingActivity(this);
-        if (application.getHunt() != null && application.getHunt().getElapsedTime() > 0) {
+        if (application.getHunt() != null && application.getHunt().getElapsedTime() > 0 && application.validateRequiredImagesPresent()) {
             Log.d(TAG, "hunt is ongoing");
             // user exited after starting a hunt.  resume where he or she left off
             Intent i = new Intent(this, TargetCollectionActivity.class);
