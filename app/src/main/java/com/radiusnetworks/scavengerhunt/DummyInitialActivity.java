@@ -1,6 +1,5 @@
 package com.radiusnetworks.scavengerhunt;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -21,7 +20,7 @@ public class DummyInitialActivity extends android.app.Activity {
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
         String code = settings.getString("code", null);
         // If we have everything we need to resume, just do so
-        if (application.canResume() && code != null) {
+        if (application.canResume()) {
             Log.d(TAG, "**** RESUMING FROM WHERE WE LEFT OFF");
 
             application.getHunt().start();
