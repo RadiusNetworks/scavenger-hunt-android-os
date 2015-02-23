@@ -321,7 +321,7 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
     @Override
     public void didDetermineStateForRegion(int i, ProximityKitBeaconRegion region) {
         // Called when one of the beacons defined in ProximityKit first appears or disappears
-        Log.d(TAG, "didExitRegion");
+        Log.d(TAG, "didDetermineStateForRegion");
     }
 
     @Override

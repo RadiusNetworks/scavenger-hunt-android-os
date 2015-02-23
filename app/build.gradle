@@ -3,7 +3,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:0.12.+'
+        classpath 'com.android.tools.build:gradle:1.0.+'
     }
 }
 apply plugin: 'android'
@@ -27,7 +27,7 @@ android {
     }
     buildTypes {
         release {
-            runProguard false
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
     }
@@ -41,6 +41,6 @@ android {
 dependencies {
     compile 'com.radiusnetworks:proximitykit-android:0+@aar'
     compile 'com.android.support:appcompat-v7:19.+'
-    compile 'com.android.support:support-v4:19.1.0'
+    compile 'com.google.android.gms:play-services:5.+'
 }
 
