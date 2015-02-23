@@ -11,7 +11,7 @@ The app is built on top of our Proximity Kit cloud service for AltBeacons, which
 
 ##Building the App
 
-The app may be built using Android Studio 0.8.6 and Gradle 1.12. Other versions of this software may not compile. Make sure to have Android build tools version 19.1.0 downloaded into your Android SDK Manager as well. 
+The app may be built using Android Studio 1.0.1 and Gradle 2.2.1. Other versions of this software may not compile. Make sure to have Android build tools version 19.1.0 downloaded into your Android SDK Manager as well. 
 
 To build the app, unzip the project file, open Android Studio and select Import Project. Select the build.gradle file within the top level of the project folder and hit OK. Click the Run button or select Run 'app' from the Run dropdown menu on the top bar.
 
