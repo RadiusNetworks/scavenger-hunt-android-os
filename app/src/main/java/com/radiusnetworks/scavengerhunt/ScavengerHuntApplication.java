@@ -67,7 +67,7 @@ import java.util.Map;
 public class ScavengerHuntApplication extends Application implements ProximityKitMonitorNotifier,
         ProximityKitRangeNotifier, ProximityKitSyncNotifier {
 
-    private static final String TAG = "ScavengerHuntApplication";
+    private static final String TAG = "SHA";
     private static final Double MINIMUM_TRIGGER_DISTANCE_METERS = 10.0;
     private static final long REPEAT_NOTIF_RESTRICTED_PERIOD_MSECS = 300000;
     private ProximityKitManager manager;
@@ -138,7 +138,6 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         return (hunt!= null && hunt.getTargetList().size() > 0 && validateRequiredImagesPresent());
     }
 
-    @Override
     public void startOver(Activity activity, boolean forceCodeReentry) {
         if (hunt != null) {
             hunt.reset();
