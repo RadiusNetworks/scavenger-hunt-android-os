@@ -1,1 +1,1 @@
-include ':app' , ':proximitykit-android' , ':android-beacon-library'
+include ':app'

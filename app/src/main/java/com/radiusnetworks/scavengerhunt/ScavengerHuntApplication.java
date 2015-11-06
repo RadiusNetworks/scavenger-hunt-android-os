@@ -129,6 +129,7 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
             manager.start(); // This starts ranging and monitoring for beacons defined in ProximityKit\
         }
     }
+
     public boolean canResume() {
         hunt = Hunt.loadFromPreferences(this);
 
@@ -137,6 +138,7 @@ public class ScavengerHuntApplication extends Application implements ProximityKi
         return (hunt!= null && hunt.getTargetList().size() > 0 && validateRequiredImagesPresent());
     }
 
+    @Override
     public void startOver(Activity activity, boolean forceCodeReentry) {
         if (hunt != null) {
             hunt.reset();

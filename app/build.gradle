@@ -16,12 +16,12 @@ repositories {
 }
 
 android {
-    compileSdkVersion 18
-    buildToolsVersion '19.1.0'
+    compileSdkVersion 22
+    buildToolsVersion '23.0.1'
 
     defaultConfig {
         minSdkVersion 18
-        targetSdkVersion 19
+        targetSdkVersion 22
         versionCode 2
         versionName "1.1"
     }
@@ -39,8 +39,8 @@ android {
 }
 
 dependencies {
-    compile 'com.radiusnetworks:proximitykit-android:0+@aar'
-    compile 'com.android.support:appcompat-v7:19.+'
-    compile 'com.google.android.gms:play-services:5.+'
+    compile 'org.altbeacon:android-beacon-library:2+'
+    compile 'com.android.support:appcompat-v7:22.1.1'
+    compile 'com.google.android.gms:play-services:8.+'
 }
 
